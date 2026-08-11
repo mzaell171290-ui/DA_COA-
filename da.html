@@ -1,1889 +1,1274 @@
-<!doctype html>
-  <html lang="en">
-  <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Disaster Audit — Commission on Audit</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
-  <meta name="description" content="The Commission on Audit ensures every peso allocated for disaster response reaches its intended purpose.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dastyle.css?v=22">
-  </head>
-  <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Disaster Audit — Commission on Audit</title>
+<meta name="description" content="A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     TOKENS — same ledger palette/type system as the desktop site
+     ========================================================= */
+  :root{
+    --maroon-950:#170709; --maroon-900:#3D0C16; --maroon-700:#7F1425; --maroon-600:#9C1B2F; --maroon-050:#F3E1E3;
+    --gold:#A39B8B; --gold-100:#EDE8DE;
+    --paper:#F9F6F0; --paper-dim:#EFE9DC;
+    --ink:#1A1616; --ink-soft:#3D3A31; --line:#C9C0AE;
+    --font-display:"Fraunces","Iowan Old Style",Georgia,serif;
+    --font-body:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+    --radius-s:6px; --radius-m:14px; --radius-l:26px;
+    --shadow-card:0 1px 2px rgba(58,15,20,.06), 0 12px 30px -18px rgba(58,15,20,.35);
+    --shadow-lift:0 20px 45px -20px rgba(58,15,20,.45);
+    --gutter:20px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; font-family:var(--font-body); color:var(--ink); background:var(--paper);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%; display:block;}
+  a{color:inherit;}
+  h1,h2,h3,h4{font-family:var(--font-display); margin:0 0 .3em; color:var(--maroon-900); line-height:1.1;}
+  p{margin:0 0 1em;}
+  .eyebrow{
+    font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.14em;
+    font-size:.68rem; color:var(--maroon-700); font-weight:600; margin:0 0 .7em;
+  }
+  .muted{color:var(--ink-soft);}
+  :focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  .skip-link{position:absolute; left:-999px; top:0; background:var(--maroon-700); color:#fff; padding:.8em 1.2em; z-index:999; border-radius:0 0 var(--radius-s) 0;}
+  .skip-link:focus{left:0;}
 
-  <a class="skip-link" href="#main">Skip to content</a>
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+    font-family:var(--font-body); font-weight:600; font-size:.88rem;
+    padding:.85em 1.3em; border-radius:999px; border:1px solid transparent;
+    text-decoration:none; cursor:pointer; transition:background .2s ease, color .2s ease, transform .2s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn--solid{background:var(--maroon-700); color:#fff; box-shadow:var(--shadow-card);}
+  .btn--solid:active{background:var(--maroon-900); transform:scale(.98);}
+  .btn--outline{color:var(--maroon-700); border-color:var(--maroon-700); background:transparent;}
+  .btn--outline:active{background:var(--maroon-700); color:#fff;}
+  .btn--block{width:100%;}
 
-  
-  <header class="site-header" data-nav-theme="dark">
-    <div id="grainient-bg" class="grainient-container" aria-hidden="true"></div>
+  /* =========================================================
+     HEADER + MOBILE NAV (pure CSS/JS — no GSAP)
+     ========================================================= */
+  .site-header{
+    position:sticky; top:0; z-index:100;
+    background:linear-gradient(160deg, var(--maroon-950) 0%, var(--maroon-900) 60%, var(--maroon-700) 130%);
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.5em var(--gutter); font-family:var(--font-mono); font-size:.64rem;
+    letter-spacing:.06em; color:rgba(255,255,255,.65); border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .topbar__seal{color:var(--gold); margin-right:.4em;}
 
-    <div class="topbar">
-      <span class="topbar__seal">&#9670;</span>
-      REPUBLIC OF THE PHILIPPINES &nbsp;·&nbsp; AN OFFICIAL COMMISSION ON AUDIT PORTAL
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.7em var(--gutter);
+  }
+  .brand{display:flex; align-items:center; gap:.6em; text-decoration:none;}
+  .brand img{width:34px; height:34px; border-radius:50%; object-fit:cover; background:var(--gold-100);}
+  .brand__name{font-family:var(--font-display); font-size:1.05rem; color:#fff; font-weight:600;}
+  .brand__name em{font-style:normal; color:var(--gold); display:block; font-family:var(--font-mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600;}
+
+  .hamburger{
+    width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.06); position:relative; cursor:pointer; flex:0 0 auto;
+  }
+  .hamburger span{
+    position:absolute; left:11px; right:11px; height:2px; background:#fff; border-radius:2px;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .hamburger span:nth-child(1){top:15px;}
+  .hamburger span:nth-child(2){top:20px;}
+  .hamburger span:nth-child(3){top:25px;}
+  .hamburger.open span:nth-child(1){transform:translateY(5px) rotate(45deg);}
+  .hamburger.open span:nth-child(2){opacity:0;}
+  .hamburger.open span:nth-child(3){transform:translateY(-5px) rotate(-45deg);}
+
+  .mobile-nav{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    background:var(--maroon-950); border-top:1px solid rgba(255,255,255,.08);
+  }
+  .mobile-nav.open{max-height:480px;}
+  .mobile-nav__inner{padding:.6em var(--gutter) 1.4em;}
+  .mobile-nav a{
+    display:block; padding:.85em 0; color:#fff; text-decoration:none; font-weight:600;
+    font-size:.95rem; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .mobile-nav a span{display:block; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); margin-top:.15em; font-weight:600;}
+  .mobile-nav .btn{margin-top:1em;}
+
+  /* =========================================================
+     HERO
+     ========================================================= */
+  .hero{
+    background:linear-gradient(175deg, var(--maroon-950) 0%, var(--maroon-900) 55%, var(--maroon-700) 140%);
+    color:#fff; padding:1.8em var(--gutter) 2.4em; position:relative; overflow:hidden;
+  }
+  /* ambient gradient wash standing in for the WebGL grainient background —
+     same warm maroon glow, done with layered radial-gradients + a slow CSS
+     keyframe drift instead of a shader */
+  .hero::before{
+    content:""; position:absolute; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 20% 15%, rgba(163,155,139,.20), transparent 60%),
+      radial-gradient(55% 45% at 85% 80%, rgba(127,20,37,.55), transparent 65%);
+    animation:hero-drift 16s ease-in-out infinite alternate;
+  }
+  @keyframes hero-drift{
+    from{ transform:translate(-2%, -1%) scale(1); }
+    to{ transform:translate(2%, 2%) scale(1.06); }
+  }
+  .hero__inner{position:relative; z-index:1;}
+  .hero .eyebrow{color:var(--gold);}
+  .hero__title{font-size:clamp(1.7rem, 7vw, 2.1rem); color:#fff;}
+  .hero__title em{color:var(--gold); font-style:italic;}
+  .hero__lede{color:rgba(249,246,240,.8); font-size:.95rem; max-width:46ch;}
+
+  .hero__search{
+    display:flex; align-items:center; gap:.5em; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:.3em .3em .3em 1.1em; margin:1.2em 0;
+  }
+  .hero__search input{
+    flex:1; background:none; border:none; color:#fff; font-family:var(--font-body); font-size:.85rem; padding:.6em 0;
+  }
+  .hero__search input::placeholder{color:rgba(255,255,255,.5);}
+  .hero__search button{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--gold);
+    color:var(--maroon-950); font-size:1rem; cursor:pointer; flex:0 0 auto;
+  }
+
+  .hero__stats{display:flex; gap:1.4em; margin:1.4em 0 1.8em; flex-wrap:wrap;}
+  .hero__stats div strong{display:block; font-family:var(--font-mono); font-size:1.3rem; color:var(--gold);}
+  .hero__stats div span{font-size:.72rem; color:rgba(249,246,240,.65);}
+
+  /* live ledger card — a plain looping CSS list standing in for the
+     GSAP CardSwap 3D stack: same content, a much simpler mobile-friendly
+     motion (one row fades/slides in at a time) */
+  .ledger-card{
+    background:var(--maroon-700); border-radius:var(--radius-l); padding:1.3em;
+    box-shadow:var(--shadow-lift); border:1px solid rgba(255,255,255,.08);
+  }
+  .ledger-card__head{display:flex; align-items:center; gap:.5em; font-family:var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--gold-100); margin-bottom:.9em;}
+  .ledger-card__dot{width:7px; height:7px; border-radius:50%; background:#8FD19E; box-shadow:0 0 0 3px rgba(143,209,158,.25); animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.4;}}
+  .ledger-feed{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.7em;}
+  .ledger-feed li{
+    background:rgba(0,0,0,.14); border-radius:var(--radius-s); padding:.7em .8em;
+    animation:feed-in .5s ease both;
+  }
+  .ledger-feed li:nth-child(2){animation-delay:.1s;}
+  .ledger-feed li:nth-child(3){animation-delay:.2s;}
+  @keyframes feed-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .ledger-feed .row{display:flex; justify-content:space-between; align-items:baseline; gap:.6em;}
+  .ledger-feed .amount{font-family:var(--font-mono); font-weight:700; font-size:.78rem; color:#fff;}
+  .ledger-feed .loc{font-size:.76rem; color:rgba(255,255,255,.85);}
+  .ledger-feed time{font-family:var(--font-mono); font-size:.66rem; color:rgba(255,255,255,.5);}
+
+  /* =========================================================
+     SHARED SECTION LAYOUT
+     ========================================================= */
+  .section{padding:2.4em var(--gutter);}
+  .section--tinted{background:var(--paper-dim);}
+  .section__head{margin-bottom:1.2em;}
+  .section__lede{color:var(--ink-soft); font-size:.92rem; max-width:52ch;}
+
+  .filter-row{display:flex; gap:.5em; overflow-x:auto; padding-bottom:.3em; margin-bottom:1.2em; -webkit-overflow-scrolling:touch;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{
+    flex:0 0 auto; font-family:var(--font-mono); font-size:.7rem; letter-spacing:.04em; text-transform:uppercase;
+    padding:.6em 1.05em; border-radius:999px; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink-soft); cursor:pointer; white-space:nowrap; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .filter-chip.is-active{background:var(--maroon-700); border-color:var(--maroon-700); color:#fff;}
+
+  /* library "Filter" button — opens the place/event panel */
+  .filter-btn{
+    display:flex; align-items:center; gap:.6em; width:100%; margin-bottom:1.2em;
+    background:#fff; border:1px solid var(--line); border-radius:999px; padding:.8em 1.1em;
+    font-family:var(--font-body); font-size:.85rem; font-weight:600; color:var(--ink);
+    cursor:pointer; text-align:left;
+  }
+  .filter-btn svg{flex:0 0 auto; color:var(--maroon-700);}
+  .filter-btn span:first-of-type{flex:1;}
+  .filter-btn__count{
+    flex:0 0 auto; min-width:20px; height:20px; padding:0 .4em; border-radius:999px;
+    background:var(--maroon-700); color:#fff; font-family:var(--font-mono); font-size:.68rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* place/event filter panel contents */
+  .filter-group{margin-bottom:1.4em;}
+  .filter-group:last-child{margin-bottom:0;}
+  .filter-group h4{
+    font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--ink-soft); margin-bottom:.7em;
+  }
+  .filter-pills{display:flex; flex-wrap:wrap; gap:.5em;}
+  .filter-pills .pill{
+    font-family:var(--font-body); font-size:.82rem; font-weight:600; color:var(--ink-soft);
+    background:var(--paper-dim); border:1px solid transparent; border-radius:999px;
+    padding:.6em 1.1em; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .filter-pills .pill.is-active{background:var(--maroon-700); color:#fff;}
+  .modal-panel__actions{display:flex; gap:.7em; padding-top:1.2em; margin-top:.4em; border-top:1px solid var(--line);}
+  .modal-panel__actions .btn{flex:1;}
+
+  .card-grid{display:flex; flex-direction:column; gap:1em;}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-m); padding:1.2em;
+    box-shadow:var(--shadow-card);
+  }
+  .card__kicker{font-family:var(--font-mono); font-size:.64rem; text-transform:uppercase; letter-spacing:.1em; color:var(--maroon-700); font-weight:700; margin-bottom:.4em;}
+  .card h3{font-size:1.05rem; margin-bottom:.3em;}
+  .card p{font-size:.85rem; color:var(--ink-soft); margin-bottom:.9em;}
+  .card__meta{display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft);}
+  .card__meta strong{color:var(--maroon-700);}
+  .see-more{margin-top:1.2em;}
+
+  /* articles & briefings — modern editorial cards: gradient thumb with
+     a floating tag pill, hover lift, and a stretched-link "Read more" */
+  .news-grid{display:flex; flex-direction:column; gap:1.1em;}
+  .news-card{
+    position:relative; display:flex; flex-direction:column;
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-m);
+    overflow:hidden; box-shadow:var(--shadow-card);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .news-card:hover, .news-card:focus-within{
+    transform:translateY(-4px); box-shadow:var(--shadow-lift); border-color:var(--maroon-700);
+  }
+  .news-card__thumb{
+    position:relative; aspect-ratio:16/9; overflow:hidden;
+    display:flex; align-items:flex-end; padding:.9em;
+    background:linear-gradient(135deg, var(--maroon-900) 0%, var(--maroon-700) 55%, var(--gold) 150%);
+  }
+  .news-card__thumb::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 12% 0%, rgba(255,255,255,.22), transparent 55%);
+    mix-blend-mode:overlay; pointer-events:none;
+  }
+  .news-card__tag{
+    position:relative; z-index:1; font-family:var(--font-mono); font-size:.62rem;
+    text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:#fff;
+    background:rgba(23,7,9,.4); border:1px solid rgba(255,255,255,.35);
+    padding:.35em .75em; border-radius:999px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  }
+  .news-card__body{padding:1.1em 1.2em 1.2em; display:flex; flex-direction:column; flex:1;}
+  .news-card__body h3{font-size:1rem; margin-bottom:.35em;}
+  .news-card__body p{font-size:.85rem; color:var(--ink-soft); margin-bottom:1em; flex:1;}
+  .news-card__meta{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft);
+    border-top:1px solid var(--paper-dim); padding-top:.8em;
+  }
+  .news-card__cta{
+    position:relative; display:inline-flex; align-items:center; gap:.3em;
+    font-family:var(--font-body); font-weight:600; font-size:.8rem; color:var(--maroon-700);
+    text-decoration:none; transition:gap .2s ease;
+  }
+  .news-card__cta::after{content:""; position:absolute; inset:0;}
+  .news-card:hover .news-card__cta{gap:.5em;}
+  @media (min-width:600px){ .news-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.2em;} }
+
+  /* =========================================================
+     FLOATING "MORE REPORTS" PANEL — bottom-sheet modal, pure CSS
+     transitions (transform/opacity), no dependencies
+     ========================================================= */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:flex-end; justify-content:center;
+    background:rgba(23,7,9,.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .3s ease, visibility 0s linear .3s;
+  }
+  .modal-overlay.is-open{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity .3s ease, visibility 0s linear 0s;
+  }
+
+  .modal-panel{
+    width:100%; max-width:520px; max-height:86vh; overflow-y:auto;
+    background:var(--paper); border-radius:24px 24px 0 0;
+    box-shadow:0 -20px 60px -20px rgba(23,7,9,.5);
+    padding:.6em var(--gutter) 2em;
+    transform:translateY(100%); transition:transform .38s cubic-bezier(.22,.9,.32,1);
+  }
+  .modal-overlay.is-open .modal-panel{transform:translateY(0);}
+
+  .modal-panel__handle{width:40px; height:4px; border-radius:999px; background:var(--line); margin:.7em auto 1em;}
+  .modal-panel__head{display:flex; align-items:center; justify-content:space-between; margin-bottom:1.1em;}
+  .modal-panel__head h3{margin:0; font-size:1.15rem;}
+  .modal-panel__close{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:#fff;
+    color:var(--ink-soft); font-size:.85rem; cursor:pointer; flex:0 0 auto;
+  }
+  .modal-panel__body{display:flex; flex-direction:column; gap:1em;}
+
+  /* modernized report card — used inside the floating panel */
+  .modern-card{
+    position:relative; background:#fff; border-radius:var(--radius-l); padding:1.3em 1.3em 1.1em;
+    box-shadow:0 1px 2px rgba(58,15,20,.05), 0 16px 32px -20px rgba(58,15,20,.35);
+    border:1px solid rgba(201,192,174,.5);
+    opacity:0; transform:translateY(10px); animation:modern-card-in .45s ease forwards;
+  }
+  @keyframes modern-card-in{ to{ opacity:1; transform:translateY(0); } }
+  .modal-panel__body .modern-card:nth-child(1){animation-delay:.05s;}
+  .modal-panel__body .modern-card:nth-child(2){animation-delay:.12s;}
+  .modal-panel__body .modern-card:nth-child(3){animation-delay:.19s;}
+  .modal-panel__body .modern-card:nth-child(4){animation-delay:.26s;}
+  .modal-panel__body .modern-card:nth-child(5){animation-delay:.33s;}
+  .modal-panel__body .modern-card:nth-child(6){animation-delay:.4s;}
+
+  .modern-card__top{display:flex; align-items:center; margin-bottom:.9em;}
+  .modern-card__tag{
+    font-family:var(--font-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--maroon-700); font-weight:700; background:var(--maroon-050);
+    padding:.35em .7em; border-radius:999px;
+  }
+  .modern-card h4{font-size:1rem; margin-bottom:.35em;}
+  .modern-card p{font-size:.85rem; color:var(--ink-soft); margin-bottom:1em;}
+
+  .modern-card__progress{display:flex; align-items:center; gap:.7em; margin-bottom:1em;}
+  .modern-card__progress-track{flex:1; height:6px; border-radius:999px; background:var(--paper-dim); overflow:hidden;}
+  .modern-card__progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg, var(--maroon-700), var(--maroon-600));}
+  .modern-card__progress span{font-family:var(--font-mono); font-size:.7rem; color:var(--maroon-700); font-weight:700; white-space:nowrap;}
+  .modern-card__progress span em{font-style:normal; color:var(--ink-soft); font-weight:600;}
+
+  .modern-card__foot{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--paper-dim); padding-top:.8em;}
+  .modern-card__foot span{font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .modern-card__foot a{font-size:.8rem; font-weight:600; color:var(--maroon-700); text-decoration:none;}
+
+  /* documentation card — same modern-card shell, with a photo thumbnail
+     up top instead of a progress bar */
+  .doc-card__thumb{
+    aspect-ratio:16/9; border-radius:var(--radius-m); margin-bottom:.9em;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.66rem; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); padding:1em;
+  }
+  .doc-card .modern-card__top{margin-bottom:.6em;}
+
+  body.modal-open{overflow:hidden;}
+
+  /* =========================================================
+     CHAT SUPPORT WIDGET — floating launcher + slide-up panel,
+     matching the "DisasterAudit Support" reference mockup
+     ========================================================= */
+  .chat-launcher{
+    position:fixed; right:1.1em; bottom:1.1em; z-index:220;
+    width:56px; height:56px; border-radius:50%; border:none;
+    background:var(--maroon-700); color:#fff; box-shadow:0 14px 30px -10px rgba(23,7,9,.5);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .chat-launcher:active{transform:scale(.94);}
+  .chat-launcher.is-open{background:var(--maroon-900);}
+
+  .chat-panel{
+    position:fixed; right:1.1em; bottom:5.2em; z-index:219;
+    width:min(88vw, 340px); max-height:70vh;
+    background:var(--paper); border-radius:var(--radius-l);
+    box-shadow:0 30px 60px -20px rgba(23,7,9,.5);
+    display:flex; flex-direction:column; overflow:hidden;
+    transform-origin:bottom right;
+    opacity:0; visibility:hidden; transform:scale(.9) translateY(10px);
+    transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
+  }
+  .chat-panel.is-open{
+    opacity:1; visibility:visible; transform:scale(1) translateY(0);
+    transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s;
+  }
+
+  .chat-panel__head{
+    display:flex; align-items:center; gap:.7em; padding:1em 1.1em;
+    background:linear-gradient(160deg, var(--maroon-950), var(--maroon-700));
+  }
+  .chat-panel__avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--gold-100); flex:0 0 auto;
+  }
+  .chat-panel__title{flex:1; min-width:0;}
+  .chat-panel__title strong{display:block; color:#fff; font-family:var(--font-display); font-size:.95rem;}
+  .chat-panel__title span{
+    display:flex; align-items:center; gap:.35em; font-size:.68rem; color:rgba(249,246,240,.7);
+  }
+  .chat-panel__title span i{width:6px; height:6px; border-radius:50%; background:#8FD19E; display:inline-block;}
+  .chat-panel__close{
+    width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,.12);
+    color:#fff; font-size:.75rem; cursor:pointer; flex:0 0 auto;
+  }
+
+  .chat-panel__body{flex:1; overflow-y:auto; padding:1em 1.1em; display:flex; flex-direction:column; gap:.8em;}
+  .chat-msg{max-width:88%;}
+  .chat-msg p{
+    margin:0; font-size:.82rem; line-height:1.4; padding:.7em .9em; border-radius:var(--radius-m);
+  }
+  .chat-msg time{display:block; font-family:var(--font-mono); font-size:.6rem; color:var(--ink-soft); margin-top:.3em;}
+  .chat-msg--bot{align-self:flex-start;}
+  .chat-msg--bot p{background:#fff; border:1px solid var(--line); color:var(--ink); border-bottom-left-radius:4px;}
+  .chat-msg--user{align-self:flex-end;}
+  .chat-msg--user p{background:var(--maroon-700); color:#fff; border-bottom-right-radius:4px;}
+  .chat-msg--user time{text-align:right;}
+  .chat-msg__actions{display:flex; gap:.5em; margin-top:.5em; flex-wrap:wrap;}
+  .chat-quick-btn{
+    font-size:.74rem; font-weight:600; color:var(--maroon-700); text-decoration:none;
+    border:1px solid var(--maroon-700); border-radius:999px; padding:.5em 1em;
+  }
+
+  .chat-panel__composer{
+    display:flex; align-items:center; gap:.5em; padding:.7em .8em;
+    border-top:1px solid var(--line); background:var(--paper);
+  }
+  .chat-panel__composer input{
+    flex:1; border:none; background:var(--paper-dim); border-radius:999px; padding:.7em 1em;
+    font-family:var(--font-body); font-size:.82rem; color:var(--ink);
+  }
+  .chat-panel__composer input:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .chat-panel__composer button{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--maroon-700); color:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .chat-panel{transition:none !important;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .modal-overlay, .modal-panel, .modern-card{animation:none !important; transition:none !important;}
+  }
+
+  /* library — simple horizontal scroll strip, mobile-first replacement
+     for the WebGL dome sphere */
+  .photo-strip{display:flex; gap:.7em; overflow-x:auto; padding-bottom:.4em; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory;}
+  .photo-strip::-webkit-scrollbar{display:none;}
+  .photo-strip figure{
+    flex:0 0 76%; margin:0; scroll-snap-align:start; border-radius:var(--radius-m); overflow:hidden;
+    box-shadow:var(--shadow-card); border:1px solid var(--line); background:var(--paper-dim); aspect-ratio:4/3;
+    position:relative;
+  }
+  .photo-strip figure .ph{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    color:var(--ink-soft); font-family:var(--font-mono); font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:1em;
+  }
+  .photo-strip figcaption{
+    position:absolute; left:0; right:0; bottom:0; padding:.6em .8em;
+    background:linear-gradient(to top, rgba(23,7,9,.75), transparent);
+    color:#fff; font-size:.72rem; font-family:var(--font-mono);
+  }
+
+  /* risk map — dark hero-matching panel with a donut breakdown by risk
+     tier (no named regions, just the aggregate exposure picture) */
+  .section--risk{
+    background:linear-gradient(175deg, var(--maroon-950) 0%, var(--maroon-900) 55%, var(--maroon-700) 140%);
+    color:#fff; position:relative; overflow:hidden;
+  }
+  .section--risk::before{
+    content:""; position:absolute; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 80% 12%, rgba(163,155,139,.20), transparent 60%),
+      radial-gradient(55% 45% at 12% 88%, rgba(127,20,37,.55), transparent 65%);
+    animation:hero-drift 18s ease-in-out infinite alternate;
+  }
+  .section--risk .section__head, .section--risk .risk-panel{position:relative; z-index:1;}
+  .section--risk .eyebrow{color:var(--gold);}
+  .section--risk h2{color:#fff;}
+  .section--risk .section__lede{color:rgba(249,246,240,.75);}
+
+  .risk-panel{
+    display:flex; flex-wrap:wrap; align-items:center; gap:1.8em;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    border-radius:var(--radius-l); padding:1.6em;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    box-shadow:var(--shadow-lift);
+  }
+  .risk-video{
+    flex:1 1 320px; min-width:260px; max-width:460px;
+    aspect-ratio:16/9; width:100%; border-radius:var(--radius-m);
+    overflow:hidden; background:var(--maroon-950);
+    border:1px solid rgba(255,255,255,.16); box-shadow:var(--shadow-card);
+  }
+  .risk-video video{width:100%; height:100%; object-fit:cover; display:block;}
+  .risk-panel__text{flex:1 1 240px; min-width:220px;}
+  .risk-panel__text h3{
+    color:#fff; font-size:clamp(1.05rem, 2vw + .6rem, 1.3rem); margin:0 0 .4em;
+  }
+  .risk-panel__text p{color:rgba(249,246,240,.75); font-size:.9rem; margin:0;}
+
+  /* FAQ — native <details>, no JS needed */
+  .faq-list{display:flex; flex-direction:column; gap:.7em;}
+  .faq-list details{
+    background:var(--paper-dim); border:none; border-radius:var(--radius-m); padding:.3em 1.1em;
+    transition:background .25s ease;
+  }
+  .faq-list summary{
+    padding:1em 0; font-weight:700; font-size:.92rem; cursor:pointer; list-style:none;
+    display:flex; justify-content:space-between; align-items:center; gap:1em; line-height:1.35;
+  }
+  .faq-list summary::-webkit-details-marker{display:none;}
+  .faq-list summary::after{
+    content:"+"; flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff; color:var(--maroon-700); font-family:var(--font-mono); font-size:1rem; font-weight:700;
+    transition:background .2s ease, color .2s ease;
+  }
+  .faq-list details[open]{background:var(--maroon-700); color:#fff;}
+  .faq-list details[open] summary::after{content:"–"; background:rgba(255,255,255,.16); color:#fff;}
+  .faq-list p{font-size:.85rem; color:var(--ink-soft); padding-bottom:1em; margin:0;}
+  .faq-list details[open] p{color:rgba(249,246,240,.85);}
+
+  /* =========================================================
+     FOOTER
+     ========================================================= */
+  .site-footer{background:var(--maroon-950); color:rgba(249,246,240,.75); padding:2.2em var(--gutter) 1.4em;}
+  .footer-brand__mark{display:flex; align-items:center; gap:.7em; text-decoration:none; margin-bottom:.9em;}
+  .footer-brand__mark img{width:40px; height:40px; border-radius:50%; object-fit:cover; background:var(--gold-100);}
+  .footer-brand__name strong{display:block; font-family:var(--font-display); font-size:1.1rem; color:#fff;}
+  .footer-brand__name em{font-style:normal; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold);}
+  .site-footer p{font-size:.85rem;}
+  .footer-seal{display:inline-block; font-family:var(--font-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); border-top:1px solid rgba(255,255,255,.15); padding-top:.9em; margin-top:.4em;}
+
+  .footer-cols{display:flex; flex-direction:column; gap:1.6em; margin:1.8em 0;}
+  .footer-col h4{font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); margin-bottom:.8em;}
+  .footer-col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.6em;}
+  .footer-col a{text-decoration:none; font-size:.87rem; color:rgba(249,246,240,.8);}
+  .footer-col address{font-style:normal; font-size:.85rem;}
+  .footer-col address p{margin:0 0 .6em;}
+
+  .footer-meta{border-top:1px solid rgba(255,255,255,.12); padding-top:1.2em; font-size:.76rem; display:flex; flex-direction:column; gap:.9em;}
+  .footer-legal{display:flex; flex-wrap:wrap; gap:.5em 1em;}
+  .footer-legal a{text-decoration:none; color:rgba(249,246,240,.6);}
+  .footer-language-selector select{
+    background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.2);
+    border-radius:999px; padding:.5em 1em; font-family:var(--font-body); font-size:.8rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hero::before{animation:none;}
+    .ledger-card__dot{animation:none;}
+    .ledger-feed li{animation:none;}
+  }
+
+  /* widen up gracefully — still a mobile-first layout, just breathes a
+     little more on larger phones/small tablets */
+  @media (min-width:480px){
+    :root{--gutter:28px;}
+    .card-grid{display:grid; grid-template-columns:1fr 1fr; gap:1em;}
+  }
+
+  /* reports — a plain stacked list, one full-width card per row */
+  #reports-grid{display:flex; flex-direction:column; gap:1em;}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="topbar">
+    <span><span class="topbar__seal">★</span>Republic of the Philippines</span>
+    <span>gov.ph</span>
+  </div>
+  <div class="navbar">
+    <a class="brand" href="#home">
+      <img src="images/logo.png" alt="Commission on Audit logo">
+      <span class="brand__name">Disaster Audit<em>Commission on Audit</em></span>
+    </a>
+    <button class="hamburger" id="navToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-hidden="true">
+    <div class="mobile-nav__inner">
+      <a href="#reports">Reports<span>Where the money went</span></a>
+      <a href="#library">Documentation library<span>Photos &amp; source records</span></a>
+      <a href="#map">Risk map<span>Exposure by region</span></a>
+      <a href="#news">Articles &amp; briefings<span>Latest findings</span></a>
+      <a href="#faq">FAQs<span>How to read the ledger</span></a>
+      <a class="btn btn--solid btn--block" href="#reports">Search the ledger</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero__inner">
+    <p class="eyebrow">Calamity fund tracker</p>
+    <h1 class="hero__title">Every peso, from the <em>national treasury</em> to the barangay.</h1>
+    <p class="hero__lede">A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending down to the last liquidation report.</p>
+
+    <div class="hero__search">
+      <input id="search" type="text" placeholder="Search tracking numbers, allocations…">
+      <button aria-label="Search">→</button>
     </div>
 
-    
-    <div class="card-nav-container">
-      <nav id="cardNav" class="card-nav" aria-label="Primary">
-        <div class="card-nav-top">
-          <div
-            id="hamburgerToggle"
-            class="hamburger-menu"
-            role="button"
-            aria-label="Open menu"
-            aria-expanded="false"
-            tabindex="0"
-          >
-            <div class="hamburger-line"></div>
-            <div class="hamburger-line"></div>
-          </div>
-
-          <a class="logo-container" href="#home">
-            <img src="Resources/image(1).png" alt="Commission on Audit logo" class="logo">
-            <span class="logo-text">
-              <strong>Disaster Audit</strong>
-              <em>Commission on Audit</em>
-            </span>
-          </a>
-
-          <div class="card-nav-status" aria-hidden="true">
-            <span class="card-nav-status__dot"></span>
-            Tracking live
-          </div>
-
-          <a href="#reports" class="card-nav-cta-button">Get Started</a>
-        </div>
-
-        <div id="cardNavContent" class="card-nav-content" aria-hidden="true">
-          <div class="nav-card">
-            <div class="nav-card-label">Reports</div>
-            <div class="nav-card-links">
-              <a class="nav-card-link" href="#reports">&#8599; DRRM &amp; fund assessments</a>
-              <a class="nav-card-link" href="#reports">&#8599; Flood control &amp; relief tracking</a>
-            </div>
-          </div>
-
-          <div class="nav-card">
-            <div class="nav-card-label">Documentation</div>
-            <div class="nav-card-links">
-              <a class="nav-card-link" href="#library">&#8599; Field photo library</a>
-              <a class="nav-card-link" href="#news">&#8599; Articles &amp; briefings</a>
-            </div>
-          </div>
-
-          <div class="nav-card">
-            <div class="nav-card-label">Get in touch</div>
-            <div class="nav-card-links">
-              <a class="nav-card-link" href="#faq">&#8599; FAQs</a>
-              <a class="nav-card-link" href="#contact">&#8599; Contact the PIO</a>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div class="hero__stats">
+      <div><strong>₱18.4B</strong><span>Tracked this year</span></div>
+      <div><strong>1,342</strong><span>Liquidation reports</span></div>
+      <div><strong>82</strong><span>Provinces covered</span></div>
     </div>
-    <div class="card-nav-spacer" aria-hidden="true"></div>
 
-    
-    <section class="hero" id="home">
-      <div class="hero__grid">
+    <div class="ledger-card">
+      <div class="ledger-card__head"><span class="ledger-card__dot"></span> Live allocation monitor · simulated data</div>
+      <ul class="ledger-feed">
+        <li><div class="row"><span class="loc">Region VIII · Typhoon relief</span><span class="amount">₱4.2M</span></div><time>2 min ago</time></li>
+        <li><div class="row"><span class="loc">Region V · Evacuation centers</span><span class="amount">₱1.8M</span></div><time>11 min ago</time></li>
+        <li><div class="row"><span class="loc">BARMM · Flood response</span><span class="amount">₱6.6M</span></div><time>24 min ago</time></li>
+      </ul>
+    </div>
+  </div>
+</section>
 
-        <div class="hero__copy">
-          <p class="eyebrow">Case File No. AR-2026-DRRM</p>
-          <h1 class="hero__title">
-            Every peso for <span>disaster response</span> should reach the ground it was meant for.
-          </h1>
-          <p class="hero__lede">
-            Disaster Audit is the Commission on Audit's public ledger for calamity funds —
-            tracing allocations, relief, and rehabilitation spending from the national treasury
-            down to the barangay, in the open.
-          </p>
+<main id="main">
 
-          <form class="search-bar" role="search" onsubmit="return false;">
-            <label for="search" class="sr-only">Search tracking numbers, allocations, or reports</label>
-            <input id="search" type="text" placeholder="Search tracking numbers, disaster allocations, or regional reports…">
-            <button type="submit" aria-label="Search">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="7"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </button>
-          </form>
-
-          <div class="hero__stats">
-            <div><strong>&#8369;45B+</strong><span>Calamity funds tracked</span></div>
-            <div><strong>1,400+</strong><span>Response teams monitored</span></div>
-            <div><strong>81</strong><span>Provinces covered</span></div>
-          </div>
-        </div>
-
-        <div class="card-swap-container" id="cardSwap" aria-label="Live allocation monitor, simulated data">
-
-          <div class="card">
-            <div class="fx-layer">
-              <div class="ambient-glow"></div>
-              <div class="blur-orb"></div>
-            </div>
-            <div class="card-padding">
-              <div>
-                <div class="badge-icon-frame"><div class="icon-pod">01</div></div>
-                <h2 class="title-text">Live Allocation Monitor</h2>
-                <p class="card-subtitle">Region V &amp; Infrastructure Fund</p>
-                <div class="stream-feed">
-                  <div class="feed-node">
-                    <div class="node-meta">DSWD &bull; 4 mins ago</div>
-                    <p class="node-desc">Allocated <strong>&#8369;45,000,000</strong> for Region V Calamity Response Operations.</p>
-                  </div>
-                  <div class="feed-node">
-                    <div class="node-meta">NDRRMC &bull; 1 hour ago</div>
-                    <p class="node-desc">Disbursed Quick Response Fund (QRF) for Infrastructure Rehabilitation.</p>
-                  </div>
-                </div>
-              </div>
-              <div class="accent-bar"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="fx-layer">
-              <div class="ambient-glow"></div>
-              <div class="blur-orb"></div>
-            </div>
-            <div class="card-padding">
-              <div>
-                <div class="badge-icon-frame"><div class="icon-pod">02</div></div>
-                <h2 class="title-text">Audit Trace</h2>
-                <p class="card-subtitle">Ledger Verification</p>
-                <div class="stream-feed">
-                  <div class="feed-node">
-                    <div class="node-meta">DILG &bull; 3 hours ago</div>
-                    <p class="node-desc">Emergency Logistics Operations clearance verified.</p>
-                  </div>
-                  <div class="feed-node">
-                    <div class="node-meta">COA &bull; status: OK</div>
-                    <p class="node-desc">Zero discrepancies detected across reviewed provinces.</p>
-                  </div>
-                </div>
-              </div>
-              <div class="accent-bar"></div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="fx-layer">
-              <div class="ambient-glow"></div>
-              <div class="blur-orb"></div>
-            </div>
-            <div class="card-padding">
-              <div>
-                <div class="badge-icon-frame"><div class="icon-pod">03</div></div>
-                <h2 class="title-text">Response Teams</h2>
-                <p class="card-subtitle">Field Coverage</p>
-                <div class="stream-feed">
-                  <div class="feed-node">
-                    <div class="node-meta">TEAMS &bull; tracked</div>
-                    <p class="node-desc"><strong>1,400+</strong> response teams monitored nationwide.</p>
-                  </div>
-                  <div class="feed-node">
-                    <div class="node-meta">COVERAGE &bull; provinces</div>
-                    <p class="node-desc"><strong>81</strong> provinces currently covered by field audits.</p>
-                  </div>
-                </div>
-              </div>
-              <div class="accent-bar"></div>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </section>
-  </header>
-
-  <main id="main">
-
-  
-  <section class="section reveal-section" id="reports" data-nav-theme="light">
-      <div class="section__head">
-      <div>
-        <p class="eyebrow">Welcome to Disaster Audit</p>
-        <h2>An attempt to improve accountability<br>over disaster funds.</h2>
-      </div>
-      <div class="item-hints" id="reports-hint">
-        <div class="hint" data-position="4">
-          <button
-            class="hint-dot carousel-btn"
-            type="button"
-            aria-label="View all reports"
-            title="View all reports"
-            onclick="document.getElementById('modal-reports-overview').showModal(); if(window.reportsFlowMenu){ setTimeout(function(){ window.reportsFlowMenu.refresh(); }, 30); }"
-          >&#8942;</button>
-          <div class="hint-content">
-            <p>View all reports — including Flood Control, Relief Goods, and Early Warning.</p>
-          </div>
-        </div>
-      </div>
+  <section class="section" id="reports">
+    <div class="section__head">
+      <p class="eyebrow">Reports</p>
+      <h2>Where the money went</h2>
+      <p class="section__lede">Audit findings and fund utilization reports, filterable by disaster type.</p>
     </div>
 
     <div class="filter-row" id="reports-filter-row">
-      <button class="filter-chip is-active" type="button" data-filter="all">All Reports</button>
-      <button class="filter-chip" type="button" data-filter="drrm">DRRM</button>
-      <button class="filter-chip" type="button" data-filter="yolanda">Typhoon Yolanda</button>
-      <button class="filter-chip" type="button" data-filter="cpa">CPA</button>
+      <button class="filter-chip is-active" data-filter="all">All reports</button>
+      <button class="filter-chip" data-filter="typhoon">Typhoon</button>
+      <button class="filter-chip" data-filter="earthquake">Earthquake</button>
+      <button class="filter-chip" data-filter="flood">Flood</button>
     </div>
 
-    <div class="report-carousel" id="reportsCarousel">
-      <button class="carousel__arrow carousel__arrow--prev" type="button" aria-label="Previous reports">&#8592;</button>
-
-      <ul class="carousel__track" id="reports-grid">
-
-        <li class="carousel__item" data-category="drrm">
-          <article class="card">
-            <img src="Resources/images.jpg" alt="Aerial view of landslide affected community" loading="lazy">
-            <div class="card__stamp">Filed</div>
-            <div class="card__body">
-              <p class="card__kicker">DRRM</p>
-              <h3>Assessment of Disaster Risk Reduction Management at the Local Level</h3>
-              <p class="card__desc">A limited scoping and analysis of existing DRRM practices at the Local Government Units using existing literature&hellip;</p>
-              <button class="card__link" type="button" onclick="document.getElementById('modal-report1').showModal()">Read more <span>&#8594;</span></button>
-            </div>
-          </article>
-        </li>
-
-        <li class="carousel__item" data-category="yolanda">
-          <article class="card">
-            <img src="Resources/Building Report Sec.jpg" alt="Modern government office building" loading="lazy">
-            <div class="card__stamp">Filed</div>
-            <div class="card__body">
-              <p class="card__kicker">Typhoon Yolanda</p>
-              <h3>A Special Report on Typhoon Yolanda</h3>
-              <p class="card__desc">A limited scoping and analysis of existing DRRM practices at the Local Government Units using existing literature&hellip;</p>
-              <button class="card__link" type="button" onclick="document.getElementById('modal-report2').showModal()">Read more <span>&#8594;</span></button>
-            </div>
-          </article>
-        </li>
-
-        <li class="carousel__item" data-category="cpa">
-          <article class="card">
-            <img src="Resources/coa building.jpg" alt="Stack of audit documents on a desk" loading="lazy">
-            <div class="card__stamp">Filed</div>
-            <div class="card__body">
-              <p class="card__kicker">Category</p>
-              <h3>Citizen Participatory Audit</h3>
-              <p class="card__desc">Voluptate velit nulla cillum do esse. Tempor dolore aliqua reprehenderit consequat.</p>
-              <button class="card__link" type="button" onclick="document.getElementById('modal-report3').showModal()">Read more <span>&#8594;</span></button>
-            </div>
-          </article>
-        </li>
-
-        <li class="carousel__item" data-category="flood">
-          <article class="card">
-            <img src="Resources\report123.jpg" alt="Flood control infrastructure" loading="lazy">
-            <div class="card__stamp">Filed</div>
-            <div class="card__body">
-              <p class="card__kicker">Flood Control</p>
-              <h3>Audit of Flood Control Infrastructure Projects</h3>
-              <p class="card__desc">A review of flood-control structures funded under national disaster mitigation programs&hellip;</p>
-              <button class="card__link" type="button" onclick="document.getElementById('modal-report4').showModal()">Read more <span>&#8594;</span></button>
-            </div>
-          </article>
-        </li>
-
-        <li class="carousel__item" data-category="relief">
-          <article class="card">
-            <img src="Resources\report1234.jpg" alt="Relief goods warehouse" loading="lazy">
-            <div class="card__stamp">Filed</div>
-            <div class="card__body">
-              <p class="card__kicker">Relief Goods</p>
-              <h3>Tracking Relief Goods Distribution</h3>
-              <p class="card__desc">Follows the movement of relief goods, food packs, and hygiene kits from national warehouses to barangays&hellip;</p>
-              <button class="card__link" type="button" onclick="document.getElementById('modal-report5').showModal()">Read more <span>&#8594;</span></button>
-            </div>
-          </article>
-        </li>
-
-        <li class="carousel__item carousel__item--more" data-category="all">
-          <button class="card card--more" type="button" onclick="document.getElementById('modal-reports-overview').showModal(); if(window.reportsFlowMenu){ setTimeout(function(){ window.reportsFlowMenu.refresh(); }, 30); }">
-            <span class="card--more__circle">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            </span>
-            <span class="card--more__label">View more<br>reports</span>
-          </button>
-        </li>
-
-      </ul>
-
-      <button class="carousel__arrow carousel__arrow--next" type="button" aria-label="Next reports">&#8594;</button>
+    <div class="card-grid" id="reports-grid">
+      <article class="card" data-category="typhoon">
+        <p class="card__kicker">Audit finding</p>
+        <h3>Typhoon Odette relief disbursement</h3>
+        <p>Utilization review of quick-response funds released to Region VIII local government units.</p>
+            <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:96%"></div></div>
+            <span>96% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region VIII</span><a href="#">View report →</a></div>
+          </div>
+      </article>
+      <article class="card" data-category="earthquake">
+        <p class="card__kicker">Audit finding</p>
+        <h3>Abra earthquake shelter assistance</h3>
+        <p>Review of emergency shelter assistance payouts following the 2022 Abra earthquake.</p>
+            <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:88%"></div></div>
+            <span>88% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>CAR</span><a href="#">View report →</a></div>
+      </article>
     </div>
 
-    
-    <dialog id="modal-report1" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report1').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">DRRM</p>
-        <h3>Assessment of Disaster Risk Reduction Management at the Local Level</h3>
-        <p>A limited scoping and analysis of existing Disaster Risk Reduction and Management (DRRM) practices at the Local Government Unit level, drawing on existing literature, agency reports, and field validation. The assessment looks at how provincial, city, and municipal DRRM offices plan for, budget, and account for calamity funds, and identifies recurring gaps between what is allocated on paper and what actually reaches affected communities.</p>
-        <p>Key findings cover fund utilization rates, the timeliness of disbursements after a calamity declaration, and common documentation issues auditors encounter when tracing relief goods and cash aid back to their source appropriations.</p>
-        <a class="btn btn--solid" href="DA-css,js\Resources\ndrrmcrep1.pdf" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report2" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report2').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Typhoon Yolanda</p>
-        <h3>A Special Report on Typhoon Yolanda</h3>
-        <p>This special report examines the disbursement and use of national and international relief funds following Typhoon Yolanda (Haiyan), one of the strongest storms on record to make landfall. It traces the flow of assistance from national agencies through local government units and down to the barangay level.</p>
-        <p>The report highlights lessons learned around emergency procurement rules, donor-fund reconciliation, and the rebuilding of damaged public infrastructure, with recommendations aimed at tightening controls for future large-scale disaster response.</p>
-        <a class="btn btn--solid" href="Resources\Yolandarep2.pdf" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report3" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report3').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Category</p>
-        <h3>Citizen Participatory Audit</h3>
-        <p>The Citizen Participatory Audit (CPA) program invites ordinary citizens, civil society groups, and community volunteers to take part directly in the audit process for disaster-related projects, from small flood-control structures to relief-goods warehousing.</p>
-        <p>By pairing trained COA auditors with community observers, the program builds local capacity to spot red flags early, such as ghost deliveries or overpriced materials, and strengthens public trust in how calamity funds are eventually accounted for.</p>
-        <a class="btn btn--solid" href="Resources\citizenryrep3.pdf" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report4" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report4').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Flood Control</p>
-        <h3>Audit of Flood Control Infrastructure Projects</h3>
-        <p>A review of flood-control structures funded under national disaster mitigation programs, covering drainage systems, floodwalls, and pumping stations across flood-prone provinces. The audit checks whether completed structures match approved engineering plans and released funds.</p>
-        <p>Findings point to delayed completion timelines in several provinces and recommend stronger coordination between the Department of Public Works and Highways and local disaster councils.</p>
-        <a class="btn btn--solid" href="Resources/report123.jpg" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report5" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report5').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Relief Goods</p>
-        <h3>Tracking Relief Goods Distribution</h3>
-        <p>This report follows the movement of relief goods, food packs, and hygiene kits from national warehouses down to barangay distribution points after major typhoons. It cross-checks delivery receipts against beneficiary lists to spot gaps or duplication.</p>
-        <p>The audit recommends a standardized digital tracking system to replace manual logbooks currently used by most local government units.</p>
-        <a class="btn btn--solid" href="documents/relief-report.pdf" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report6" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report6').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Early Warning</p>
-        <h3>Evaluation of Early Warning Systems</h3>
-        <p>An assessment of government-funded early warning equipment, including rain gauges, water level sensors, and community alert sirens installed in high-risk municipalities. The report examines maintenance records and response times during recent weather events.</p>
-        <p>It highlights several units left unmaintained since installation and recommends a regular inspection schedule tied to local disaster risk reduction budgets.</p>
-        <a class="btn btn--solid" href="documents/early-warning-report.pdf" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report7" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report7').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Cash-for-Work</p>
-        <h3>Audit of Cash-for-Work Program Disbursements</h3>
-        <p>Placeholder summary — replace with the real report description. This entry covers how emergency cash-for-work wages were released, tracked, and liquidated in affected communities.</p>
-        <a class="btn btn--solid" href="#" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report8" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report8').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">School Infrastructure</p>
-        <h3>School Building Damage Assessment</h3>
-        <p>Placeholder summary — replace with the real report description. Reviews post-disaster damage findings and reconstruction fund utilization for public school facilities.</p>
-        <a class="btn btn--solid" href="#" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report9" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report9').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">WASH</p>
-        <h3>Water and Sanitation Facilities Review</h3>
-        <p>Placeholder summary — replace with the real report description. Looks at emergency water and sanitation installations funded after calamity declarations.</p>
-        <a class="btn btn--solid" href="#" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-report10" class="modal" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel">
-        <button class="modal__close" onclick="document.getElementById('modal-report10').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Livelihood</p>
-        <h3>Livelihood Recovery Grants Audit</h3>
-        <p>Placeholder summary — replace with the real report description. Traces livelihood-restart grant releases to affected small business owners and farmers.</p>
-        <a class="btn btn--solid" href="#" download>Download full report</a>
-      </div>
-    </dialog>
-
-    <dialog id="modal-reports-overview" class="modal modal--wide" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel modal__panel--wide">
-        <button class="modal__close" onclick="document.getElementById('modal-reports-overview').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">More reports</p>
-        <h3>All available reports</h3>
-
-        
-        <div
-          id="reportsFlowMenu"
-          class="menu-wrap menu-wrap--modal"
-          aria-label="Browse all reports"
-        ></div>
-      </div>
-    </dialog>
+    <button class="btn btn--outline btn--block see-more" id="reports-see-more" type="button" aria-haspopup="dialog" aria-controls="reports-modal">See more reports</button>
   </section>
 
-
-  
-  <section class="section section--tinted" id="library" data-nav-theme="tinted">
-    <div class="section__head section__head--center">
-      <p class="eyebrow">Documentation library</p>
-      <h2>Field records, on the record.</h2>
-      <p class="section__lede">Visual documentation of Commission on Audit's disaster response audits, field operations, and rehabilitation assessments — ensuring transparency and fiscal accountability where it matters most.</p>
-    </div>
-
-    <div class="filter-row" id="library-filter-row">
-      <button class="filter-chip is-active" type="button" data-filter="all">All</button>
-      <button class="filter-chip" type="button" data-filter="tacloban">Tacloban</button>
-      <button class="filter-chip" type="button" data-filter="briefing">Briefing</button>
-      <button class="filter-chip" type="button" data-filter="gacpa">GACPA</button>
-      <button class="filter-chip" type="button" data-filter="relief">Relief</button>
-    </div>
-
-    <div class="dome-wrap dome-wrap--teaser" aria-label="Rotating preview of the documentation library — drag to look around">
-      <div class="dome-gallery" id="library-dome-teaser" data-dome-gallery data-fit="0.55" data-min-radius="420" data-segments="18" data-idle-delay="2200"></div>
-      <p class="dome-hint">Drag to look around</p>
-    </div>
-
-    <div class="section__more">
-      <button class="btn btn--outline" type="button" id="library-gallery-trigger" onclick="document.getElementById('modal-library-gallery').showModal()">View full gallery</button>
-      
-    </div>
-
-    <dialog id="modal-library-gallery" class="modal modal--wide" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel modal__panel--wide">
-        <button class="modal__close" onclick="document.getElementById('modal-library-gallery').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">Documentation library</p>
-        <h3>Full photo gallery</h3>
-
-        <div class="gallery-view-toggle" role="group" aria-label="Gallery view">
-          <button type="button" class="view-toggle-btn is-active" data-view="dome">Immersive view</button>
-          <button type="button" class="view-toggle-btn" data-view="grid">Grid view</button>
-        </div>
-
-        <div class="dome-wrap dome-wrap--full" id="library-dome-full-wrap" aria-label="Immersive rotating gallery — drag to look around, click a photo to view it larger">
-          <div class="dome-gallery" id="library-dome-full" data-dome-gallery data-fit="0.62" data-min-radius="560" data-segments="20" data-idle-delay="3200"></div>
-          <p class="dome-hint">Drag to look around · Click a photo to enlarge</p>
-        </div>
-
-        <div class="card-grid card-grid--gallery is-hidden" id="library-grid-fallback">
-          <figure class="gallery-card"><img src="Resources/1.jpg" alt="Commissioner Mendoza at DRRM Seminar" loading="lazy"><figcaption><p class="card__kicker">DRRM Seminar</p><h4>Commissioner Mendoza @ DRRM Seminar during GACPA Convention</h4><time>May 24, 2014</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/2.jpg" alt="Relief operations for typhoon Yolanda victims" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Relief Operations for the victims of typhoon Yolanda</h4><time>Nov 8, 2013</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/3.jpg" alt="Briefing for COA auditors" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Briefing for COA Auditors of about DRR</h4><time>Nov 20, 2022</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/4.jpg" alt="Post-Yolanda rehabilitation site visit" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Post-Yolanda Rehabilitation Site Visit</h4><time>Jan 15, 2015</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/5.jpg" alt="Joint disaster simulation exercise" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Joint Disaster Simulation Exercise</h4><time>Mar 3, 2016</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/6.jpg" alt="Distribution of relief packs in Region VIII" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Distribution of Relief Packs in Region VIII</h4><time>Aug 19, 2016</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/7.jpg" alt="GACPA national convention highlights" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>GACPA National Convention Highlights</h4><time>May 22, 2017</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/8.jpg" alt="Auditor's briefing on calamity fund utilization" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Auditor's Briefing on Calamity Fund Utilization</h4><time>Feb 9, 2018</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/9.jpg" alt="Field validation of evacuation centers" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Field Validation of Evacuation Centers</h4><time>Jul 14, 2018</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/10.jpg" alt="Typhoon Yolanda memorial program" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Typhoon Yolanda Memorial Program</h4><time>Nov 8, 2018</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/11.jpg" alt="Cash-for-work program monitoring visit" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Cash-for-Work Program Monitoring Visit</h4><time>Apr 2, 2019</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/12.jpg" alt="Local DRRM officers training workshop" loading="lazy"><figcaption><p class="card__kicker">DRRM Seminar</p><h4>Local DRRM Officers Training Workshop</h4><time>Jun 27, 2019</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/13.jpg" alt="National disaster response drill" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>National Disaster Response Drill</h4><time>Sep 5, 2019</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/14.jpg" alt="Flood relief goods inventory check" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Flood Relief Goods Inventory Check</h4><time>Jan 20, 2020</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/15.jpg" alt="Special audit team deployment briefing" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Special Audit Team Deployment Briefing</h4><time>May 11, 2020</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/16.jpg" alt="Post-disaster needs assessment briefing" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Post-Disaster Needs Assessment Briefing</h4><time>Aug 3, 2020</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/17.jpg" alt="Regional GACPA chapter meeting" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>Regional GACPA Chapter Meeting</h4><time>Oct 14, 2020</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/18.jpg" alt="Site inspection of flood control projects" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Site Inspection of Flood Control Projects</h4><time>Feb 8, 2021</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/19.jpg" alt="Tacloban resettlement site audit" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Tacloban Resettlement Site Audit</h4><time>Apr 25, 2021</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/20.jpg" alt="Family assistance package distribution" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Family Assistance Package Distribution</h4><time>Jun 30, 2021</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/21.jpg" alt="Inter-agency coordination meeting" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Inter-Agency Coordination Meeting</h4><time>Sep 16, 2021</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/22.jpg" alt="Relief goods warehousing inspection" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Relief Goods Warehousing Inspection</h4><time>Dec 1, 2021</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/23.jpg" alt="Auditors' roundtable on fund utilization" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Auditors' Roundtable on Fund Utilization</h4><time>Mar 9, 2022</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/24.jpg" alt="Calamity fund orientation for new auditors" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Calamity Fund Orientation for New Auditors</h4><time>Jun 21, 2022</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/25.jpg" alt="GACPA regional convention recap" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>GACPA Regional Convention Recap</h4><time>Sep 2, 2022</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/26.jpg" alt="Evacuation center readiness check" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Evacuation Center Readiness Check</h4><time>Jan 18, 2023</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/27.jpg" alt="Ongoing rehabilitation projects review" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Ongoing Rehabilitation Projects Review</h4><time>Apr 7, 2023</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/28.jpg" alt="Emergency shelter assistance monitoring" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Emergency Shelter Assistance Monitoring</h4><time>Jul 22, 2023</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/29.jpg" alt="Disaster risk reduction summit" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Disaster Risk Reduction Summit</h4><time>Oct 30, 2023</time></figcaption></figure>
-          <figure class="gallery-card"><img src="Resources/30.jpg" alt="Year-end relief operations report" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Year-End Relief Operations Report</h4><time>Dec 15, 2023</time></figcaption></figure>
-        </div>
+  <!-- Floating "more reports" panel — opens over the page, modernized card style -->
+  <div class="modal-overlay" id="reports-modal-overlay">
+    <div class="modal-panel" id="reports-modal" role="dialog" aria-modal="true" aria-labelledby="reports-modal-title">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="reports-modal-title">More reports</h3>
+        <button class="modal-panel__close" id="reports-modal-close" type="button" aria-label="Close">✕</button>
       </div>
-    </dialog>
-  </section>
+      <div class="modal-panel__body">
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__top">
+            <span class="modern-card__tag">Flood</span>
+          </div>
+          <h4>Marikina River flood relief</h4>
+          <p>Relief good distribution and cash assistance following sustained monsoon flooding.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:91%"></div></div>
+            <span>91% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>NCR</span><a href="#">View report →</a></div>
+        </article>
 
-  
-  <section class="section section--dark" id="map" data-nav-theme="dark" style="max-width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; width: 100%;">
-    <div id="grainient-map-bg" class="grainient-container" aria-hidden="true"></div>
+        <article class="modern-card" data-category="earthquake">
+          <div class="modern-card__top">
+            <span class="modern-card__tag">Earthquake</span>
+          </div>
+          <h4>Davao del Sur earthquake response</h4>
+          <p>Quick-response fund releases for temporary shelter and medical assistance.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:80%"></div></div>
+            <span>80% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region XI</span><a href="#">View report →</a></div>
+        </article>
 
-    <div class="map-layout map-layout--stacked">
-      <div class="video-carousel" id="videoCarousel" aria-label="Field footage carousel" data-swipe="true">
-  <figure class="video-carousel__frame">
-    <video id="video-carousel-player" preload="metadata" poster="images/EQs_1900-2013_worldseis.png" playsinline muted>
-      <source id="video-carousel-source" src="videos/intro.mp4" type="video/mp4">
-      Your browser doesn't support embedded video.
-    </video>
+        <article class="modern-card" data-category="typhoon">
+          <div class="modern-card__top">
+            <span class="modern-card__tag">Typhoon</span>
+          </div>
+          <h4>Typhoon Kristine agricultural aid</h4>
+          <p>Cash-for-work and farm input assistance across flood-hit municipalities.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:67%"></div></div>
+            <span>67% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region V</span><a href="#">View report →</a></div>
+        </article>
 
-    <div class="video-carousel__scrub" id="video-carousel-scrub">
-      <div class="video-carousel__progress" id="video-carousel-progress"></div>
-    </div>
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__top">
+            <span class="modern-card__tag">Flood</span>
+          </div>
+          <h4>Pampanga River basin dredging fund</h4>
+          <p>Utilization review of dredging and dike repair allocations.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:58%"></div></div>
+            <span>58% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region III</span><a href="#">View report →</a></div>
+        </article>
 
-    <div class="video-carousel__caption">
-      <p class="video-carousel__caption-kicker" id="video-carousel-kicker">Overview</p>
-      <h4 class="video-carousel__caption-title" id="video-carousel-title">Seismic and typhoon exposure, 1900–2013</h4>
-    </div>
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__top">
+            <span class="modern-card__tag">Flood</span>
+          </div>
+          <h4>Cagayan Valley flood control funds</h4>
+          <p>Tracing calamity fund releases for flood mitigation infrastructure and relief goods.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:74%"></div></div>
+            <span>74% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region II</span><a href="#">View report →</a></div>
+        </article>
 
-    <div class="video-carousel__controls">
-      <div class="video-carousel__controls-group">
-        <button type="button" class="video-carousel__ctrl video-carousel__ctrl--play" id="video-carousel-playpause" aria-label="Play">
-          <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-          <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
-        <button type="button" class="video-carousel__ctrl video-carousel__ctrl--prev" id="video-carousel-prev" aria-label="Previous video">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <button type="button" class="video-carousel__ctrl video-carousel__ctrl--next" id="video-carousel-next" aria-label="Next video">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
-        <button type="button" class="video-carousel__ctrl video-carousel__ctrl--mute" id="video-carousel-mute" aria-label="Mute">
-          <svg class="icon-vol-on" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M16.5 12c0-1.6-.8-3-2-3.9v7.8c1.2-.9 2-2.3 2-3.9z"/></svg>
-          <svg class="icon-vol-off" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden><path d="M3 10v4h4l5 5V5L7 10H3z"/><path d="M19 8.7l-1.4-1.4-2.1 2.1-2.1-2.1L12 8.7l2.1 2.1L12 12.9l1.4 1.4 2.1-2.1 2.1 2.1 1.4-1.4-2.1-2.1z"/></svg>
-        </button>
-        <input type="range" class="video-carousel__volume" id="video-carousel-volume" min="0" max="1" step="0.05" value="1" aria-label="Volume">
-        <span class="video-carousel__time" id="video-carousel-time">0:00 / 0:00</span>
-      </div>
-      <div class="video-carousel__controls-group">
-        <button type="button" class="video-carousel__ctrl video-carousel__ctrl--full" id="video-carousel-fullscreen" aria-label="Fullscreen">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-        </button>
+        <article class="modern-card" data-category="earthquake">
+          <div class="modern-card__top">
+            <span class="modern-card__tag">Earthquake</span>
+          </div>
+          <h4>Batangas volcanic evacuation aid</h4>
+          <p>Utilization review of evacuation and relief assistance for displaced households.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:83%"></div></div>
+            <span>83% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region IV-A</span><a href="#">View report →</a></div>
+        </article>
       </div>
     </div>
-  </figure>
-
-</div>
-
-      <div class="map-layout__copy">
-        <p class="eyebrow" id="map-eyebrow">+55,000 records cross-checked</p>
-        <h2 id="map-heading">Philippines</h2>
-        <p id="map-desc">The Philippines is considered one of the nations most "at risk" of being struck by disasters due to its geographic location, astride both the typhoon belt and the Pacific Ring of Fire.</p>
-        <div class="partner-logos partner-logos--large">
-          <a href="https://www.preventionweb.net/organization/national-disaster-risk-reduction-and-management-council-philippines" target="_blank" rel="noopener"><img src="Resources\ndrrmcdoc1.jpg" alt="NDRRMC"></a>
-          <a href="https://www.dilg.gov.ph/" target="_blank" rel="noopener"><img src="Resources\DILGdocu3.jpg" alt="DILG"></a>
-          <a href="https://www.dswd.gov.ph/" target="_blank" rel="noopener"><img src="Resources\dswd.png" alt="DSWD"></a>
-        </div>
-        <span class="muted" id="map-muted">+1,400 volunteer teams</span>
-      </div>
-
-      <div class="video-carousel__bar">
-    <button type="button" class="video-carousel__arrow video-carousel__arrow--prev" data-carousel-nav="prev" aria-label="Previous slide">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
-    </button>
-
-    
-    <div class="video-carousel__dots" id="video-carousel-dots" role="tablist" aria-label="Select video">
-      
-      <button type="button" 
-        class="video-carousel__dot is-active" 
-        data-src="Resources\vid1.mp4" 
-        data-poster="images/EQs_1900-2013_worldseis.png" 
-        data-kicker="Overview" 
-        data-title="Seismic and typhoon exposure, 1900–2013" 
-        data-eyebrow="+55,000 records cross-checked"
-        data-heading="Philippines"
-        data-desc="The Philippines is considered one of the nations most &quot;at risk&quot; of being struck by disasters due to its geographic location, astride both the typhoon belt and the Pacific Ring of Fire."
-        data-muted="+1,400 volunteer teams"
-        aria-label="Video 1"></button>
-
-      
-      <button type="button" 
-        class="video-carousel__dot" 
-        data-src="Resources\Relief operation.mp4" 
-        data-poster="images/poster2.png" 
-        data-kicker="NDRRMC" 
-        data-title="Inter-Agency Coordination Meeting" 
-        data-eyebrow="+30 agencies coordinated"
-        data-heading="Inter-Agency Response"
-        data-desc="Government bodies and partner NGOs meet regularly to align relief efforts, share real-time data, and coordinate resource deployment across affected regions."
-        data-muted="NDRRMC-led coordination"
-        aria-label="Video 2"></button>
-
-      
-      <button type="button" 
-        class="video-carousel__dot" 
-        data-src="Resources\Intro.mp4" 
-        data-poster="images/poster3.png" 
-        data-kicker="Field Report" 
-        data-title="Disaster Response &amp; Relief Distribution" 
-        data-eyebrow="On-the-ground relief"
-        data-heading="Relief Distribution"
-        data-desc="Field teams deliver family assistance packages directly to displaced communities, prioritizing the most vulnerable households first."
-        data-muted="+1,400 volunteer teams"
-        aria-label="Video 3"></button>
-
-      
-      <button type="button" 
-        class="video-carousel__dot" 
-        data-src="Resources\vid4.mp4" 
-        data-poster="images/poster4.png" 
-        data-kicker="Early Warning" 
-        data-title="Community Alert & Evacuation Drills" 
-        data-eyebrow="+8,000 households drilled"
-        data-heading="Early Warning Systems"
-        data-desc="Barangay-level alert networks and rehearsed evacuation routes give coastal and flood-prone communities a head start before a storm makes landfall."
-        data-muted="Barangay-led preparedness"
-        aria-label="Video 4"></button>
-
-      
-      <button type="button" 
-        class="video-carousel__dot" 
-        data-src="Resources\vid5.mp4" 
-        data-poster="images/poster5.png" 
-        data-kicker="Logistics" 
-        data-title="Pre-Positioned Relief Stockpiles" 
-        data-eyebrow="+120 warehouses nationwide"
-        data-heading="Supply Pre-Positioning"
-        data-desc="Relief goods are staged in regional hubs ahead of typhoon season so the first response can move within hours, not days, of landfall."
-        data-muted="24-hour dispatch target"
-        aria-label="Video 5"></button>
-
-      
-      <button type="button" 
-        class="video-carousel__dot" 
-        data-src="Resources\vid6.mp4" 
-        data-poster="images/poster6.png" 
-        data-kicker="Recovery" 
-        data-title="Post-Disaster Rebuilding Progress" 
-        data-eyebrow="+2,300 homes rebuilt"
-        data-heading="Long-Term Recovery"
-        data-desc="Beyond emergency response, funded rebuilding programs track home reconstruction and livelihood restoration for the hardest-hit communities."
-        data-muted="Multi-year monitoring"
-        aria-label="Video 6"></button>
-    </div>
-
-    <button type="button" class="video-carousel__arrow video-carousel__arrow--next" data-carousel-nav="next" aria-label="Next slide">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-    </button>
   </div>
+
+  <section class="section section--tinted" id="library">
+    <div class="section__head">
+      <p class="eyebrow">Documentation library</p>
+      <h2>Source photos &amp; field records</h2>
+      <p class="section__lede">Swipe through field documentation submitted alongside liquidation reports.</p>
+    </div>
+
+    <button class="filter-btn" id="libraryFilterBtn" type="button" aria-haspopup="dialog" aria-controls="libraryFilterPanel">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <span id="libraryFilterLabel">Filter by place or event</span>
+      <span class="filter-btn__count" id="libraryFilterCount" hidden>0</span>
+    </button>
+
+    <div class="photo-strip" id="library-strip">
+      <figure data-category="typhoon" data-region="Region VIII"><div class="ph">Relief goods packing<br>Tacloban warehouse</div><figcaption>Region VIII · Jan 2026</figcaption></figure>
+      <figure data-category="earthquake" data-region="CAR"><div class="ph">Temporary shelter site<br>Bangued</div><figcaption>CAR · Nov 2025</figcaption></figure>
+      <figure data-category="flood" data-region="Region II"><div class="ph">Evacuation center<br>Tuguegarao</div><figcaption>Region II · Oct 2025</figcaption></figure>
+      <figure data-category="typhoon" data-region="Region V"><div class="ph">Barangay disbursement<br>ledger sign-off</div><figcaption>Region V · Sep 2025</figcaption></figure>
+    </div>
+
+    <button class="btn btn--outline btn--block see-more" id="library-see-more" type="button" aria-haspopup="dialog" aria-controls="library-modal">See more documentation</button>
+  </section>
+
+  <!-- Filter panel — choose a place (region) and/or an event (disaster
+       type) to narrow the documentation strip -->
+  <div class="modal-overlay" id="library-filter-overlay">
+    <div class="modal-panel" id="libraryFilterPanel" role="dialog" aria-modal="true" aria-labelledby="libraryFilterTitle">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="libraryFilterTitle">Filter documentation</h3>
+        <button class="modal-panel__close" id="libraryFilterClose" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-panel__body">
+        <div class="filter-group">
+          <h4>Event</h4>
+          <div class="filter-pills" data-filter-type="category">
+            <button class="pill" data-value="typhoon">Typhoon</button>
+            <button class="pill" data-value="earthquake">Earthquake</button>
+            <button class="pill" data-value="flood">Flood</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h4>Place</h4>
+          <div class="filter-pills" data-filter-type="region">
+            <button class="pill" data-value="Region VIII">Region VIII</button>
+            <button class="pill" data-value="CAR">CAR</button>
+            <button class="pill" data-value="Region II">Region II</button>
+            <button class="pill" data-value="Region V">Region V</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-panel__actions">
+        <button class="btn btn--outline" id="libraryFilterClear" type="button">Clear</button>
+        <button class="btn btn--solid" id="libraryFilterApply" type="button">Apply filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating "more documentation" panel — same floating pattern as the reports one -->
+  <div class="modal-overlay" id="library-modal-overlay">
+    <div class="modal-panel" id="library-modal" role="dialog" aria-modal="true" aria-labelledby="library-modal-title">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="library-modal-title">More documentation</h3>
+        <button class="modal-panel__close" id="library-modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-panel__body">
+        <button class="filter-btn" id="libraryModalFilterBtn" type="button" aria-haspopup="dialog" aria-controls="libraryFilterPanel">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <span id="libraryModalFilterLabel">Filter by place or event</span>
+          <span class="filter-btn__count" id="libraryModalFilterCount" hidden>0</span>
+        </button>
+
+        <article class="modern-card doc-card" data-category="flood" data-region="Region VIII">
+          <div class="doc-card__thumb">Relief distribution site<br>Ormoc</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Flood</span></div>
+          <h4>Relief distribution site — Ormoc</h4>
+          <p>Field documentation submitted alongside the Region VIII quarterly liquidation report.</p>
+          <div class="modern-card__foot"><span>Region VIII</span><a href="#">View →</a></div>
+        </article>
+
+        <article class="modern-card doc-card" data-category="earthquake" data-region="CAR">
+          <div class="doc-card__thumb">Temporary housing units<br>La Trinidad</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Earthquake</span></div>
+          <h4>Temporary housing units — La Trinidad</h4>
+          <p>Site inspection photos submitted with the shelter assistance liquidation report.</p>
+          <div class="modern-card__foot"><span>CAR</span><a href="#">View →</a></div>
+        </article>
+
+        <article class="modern-card doc-card" data-category="flood" data-region="Region III">
+          <div class="doc-card__thumb">Dike repair progress<br>San Mateo</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Flood</span></div>
+          <h4>Dike repair progress — San Mateo</h4>
+          <p>Progress photos attached to the flood control infrastructure fund report.</p>
+          <div class="modern-card__foot"><span>Region III</span><a href="#">View →</a></div>
+        </article>
+
+        <article class="modern-card doc-card" data-category="typhoon" data-region="Region V">
+          <div class="doc-card__thumb">Farm input handover<br>Daraga</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Typhoon</span></div>
+          <h4>Farm input handover — Daraga</h4>
+          <p>Distribution records submitted with the agricultural aid liquidation report.</p>
+          <div class="modern-card__foot"><span>Region V</span><a href="#">View →</a></div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <section class="section section--risk" id="map">
+    <div class="section__head">
+      <p class="eyebrow">Risk map</p>
+      <h2>Exposure by region</h2>
+      <p class="section__lede">Aggregate risk tier across regions currently under active calamity fund monitoring.</p>
+    </div>
+    <div class="risk-panel">
+      <div class="risk-video">
+        <video controls playsinline poster="images/risk-video-poster.jpg">
+          <source src="videos/disaster-risk-audit.mp4" type="video/mp4">
+          Your browser doesn't support embedded video.
+        </video>
+      </div>
+      <div class="risk-panel__text">
+        <h3>From disaster risk to audit trail</h3>
+        <p>A short briefing on how calamity fund exposure is tracked across at-risk regions, and how that risk picture shapes what COA chooses to audit next.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tinted" id="news">
+    <div class="section__head">
+      <p class="eyebrow">Articles &amp; briefings</p>
+      <h2>Latest findings</h2>
+    </div>
+    <div class="news-grid">
+      <article class="news-card">
+        <div class="news-card__thumb"><span class="news-card__tag">Briefing</span></div>
+        <div class="news-card__body">
+          <h3>COA flags delayed liquidation in three provinces</h3>
+          <p>A summary of the latest quarterly compliance briefing on calamity fund reporting.</p>
+          <div class="news-card__meta">
+            <span>Aug 2026</span>
+            <a class="news-card__cta" href="#">Read more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+      <article class="news-card">
+        <div class="news-card__thumb"><span class="news-card__tag">Explainer</span></div>
+        <div class="news-card__body">
+          <h3>How a calamity fund release is audited</h3>
+          <p>A walkthrough of the liquidation process, from barangay request to national sign-off.</p>
+          <div class="news-card__meta">
+            <span>Jul 2026</span>
+            <a class="news-card__cta" href="#">Read more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section faq-section" id="faq">
+    <div class="section__head">
+      <p class="eyebrow">FAQs</p>
+      <h2>How can we help you?</h2>
+      <p class="section__lede">Can't find what you're looking for? Reach the COA Public Information Office through the contact details in the footer.</p>
+    </div>
+    <div class="faq-list">
+      <details open>
+        <summary>What is the "Disaster Audit" site by the Commission on Audit, and what should I know about its purpose?</summary>
+        <p>The Disaster Audit site is an official Commission on Audit (COA) portal that publishes audit findings, summaries, and related documentation on disaster fund utilization.</p>
+      </details>
+      <details>
+        <summary>Who should I contact for media, research, or official inquiries?</summary>
+        <p>Reach the COA Public Information Office through the email, phone number, and address listed in the footer below.</p>
+      </details>
+      <details>
+        <summary>How is personal or sensitive information handled on the site?</summary>
+        <p>The site publishes only official audit findings and fund allocation records — it does not collect or display personal data about individual beneficiaries.</p>
+      </details>
+      <details>
+        <summary>How do I request additional information or report a records request?</summary>
+        <p>Send a request to the Public Information Office by email or phone, listed in the footer, and include the specific report or region you're asking about.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer" id="contact">
+  <a href="#home" class="footer-brand__mark">
+    <img src="images/logo.png" alt="Commission on Audit logo">
+    <span class="footer-brand__name"><strong>Disaster Audit</strong><em>Commission on Audit</em></span>
+  </a>
+  <p>A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.</p>
+  <span class="footer-seal">Republic of the Philippines</span>
+
+  <div class="footer-cols">
+    <nav class="footer-col" aria-label="Site sections">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="#reports">Reports</a></li>
+        <li><a href="#library">Documentation library</a></li>
+        <li><a href="#news">Articles &amp; briefings</a></li>
+        <li><a href="#map">Risk map</a></li>
+        <li><a href="#faq">FAQs</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-col" aria-label="Partner agencies and resources">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="https://www.foi.gov.ph/" target="_blank" rel="noopener">FOI portal</a></li>
+        <li><a href="https://ndrrmc.gov.ph" target="_blank" rel="noopener">NDRRMC</a></li>
+        <li><a href="https://dilg.gov.ph" target="_blank" rel="noopener">DILG</a></li>
+        <li><a href="https://dswd.gov.ph" target="_blank" rel="noopener">DSWD</a></li>
+      </ul>
+    </nav>
+    <div class="footer-col">
+      <h4>Public Information Office</h4>
+      <address>
+        <p>Commission on Audit Central Office<br>Commonwealth Avenue, Quezon City, Philippines</p>
+        <p><a href="mailto:pio@coa.gov.ph">pio@coa.gov.ph</a></p>
+        <p><a href="tel:+6329317592">(02) 8931-7592</a></p>
+      </address>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <p>&copy; 2026 Commission on Audit, Republic of the Philippines. All rights reserved.</p>
+    <div class="footer-legal">
+      <a href="#">Privacy notice</a>
+      <a href="#">Data Privacy Act (RA 10173)</a>
+      <a href="#">Terms of use</a>
+    </div>
+    <div class="footer-language-selector">
+      <select id="language-select" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="fil">Filipino</option>
+      </select>
+    </div>
+  </div>
+</footer>
+
+<!-- Chat support widget — launcher + slide-up panel, matching the
+     "DisasterAudit Support" mockup -->
+<button class="chat-launcher" id="chatLauncher" type="button" aria-haspopup="dialog" aria-controls="chatPanel" aria-expanded="false" aria-label="Open chat support">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-modal="true" aria-labelledby="chatPanelTitle" aria-hidden="true">
+  <div class="chat-panel__head">
+    <span class="chat-panel__avatar"></span>
+    <div class="chat-panel__title">
+      <strong id="chatPanelTitle">DisasterAudit Support</strong>
+      <span><i></i>Usually replies in minutes</span>
+    </div>
+    <button class="chat-panel__close" id="chatPanelClose" type="button" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="chat-panel__body" id="chatPanelBody">
+    <div class="chat-msg chat-msg--bot">
+      <p>Hi! I'm here to help you look into calamity fund reports. What would you like to check?</p>
+      <time>12:01 PM</time>
+    </div>
+    <div class="chat-msg chat-msg--user">
+      <p>Paano ko po makikita ang allocation ng Region V calamity fund?</p>
+      <time>12:02 PM</time>
+    </div>
+    <div class="chat-msg chat-msg--bot">
+      <p>You can check it under the Reports section — it lists allocations by region along with the audit findings for each release.</p>
+      <div class="chat-msg__actions">
+        <a href="#reports" class="chat-quick-btn" data-close-chat>View reports</a>
+        <a href="#contact" class="chat-quick-btn" data-close-chat>Contact PIO</a>
+      </div>
+    </div>
+  </div>
+
+  <form class="chat-panel__composer" id="chatComposer">
+    <input type="text" id="chatInput" placeholder="Type your question…" autocomplete="off">
+    <button type="submit" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </form>
 </div>
-  </section>
 
-  
-  <section class="section section--tinted" id="news" data-nav-theme="tinted">
-    <div class="section__head section__head--center">
-      <p class="eyebrow">From the newsroom</p>
-      <h2>Articles &amp; briefings</h2>
-    </div>
+<script>
+  // Chat support widget — launcher toggle, plus a lightweight canned reply
+  // so typing something back actually does *something*, no backend needed.
+  (function () {
+    var launcher = document.getElementById('chatLauncher');
+    var panel = document.getElementById('chatPanel');
+    var closeBtn = document.getElementById('chatPanelClose');
+    var body = document.getElementById('chatPanelBody');
+    var form = document.getElementById('chatComposer');
+    var input = document.getElementById('chatInput');
+    if (!launcher || !panel || !closeBtn || !form || !input) return;
 
-    <div class="article-carousel" id="newsCarousel">
-      <button class="carousel-btn article-carousel__arrow article-carousel__arrow--prev" id="newsCarouselPrev" type="button" aria-label="Previous articles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </button>
+    function openChat() {
+      panel.classList.add('is-open');
+      launcher.classList.add('is-open');
+      launcher.setAttribute('aria-expanded', 'true');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+    function closeChat() {
+      panel.classList.remove('is-open');
+      launcher.classList.remove('is-open');
+      launcher.setAttribute('aria-expanded', 'false');
+      panel.setAttribute('aria-hidden', 'true');
+    }
 
-      <div class="article-carousel__track" id="newsCarouselTrack" tabindex="0" aria-label="Articles carousel, scroll or use the arrows">
-        <article class="article-card article-carousel__slide">
-          <img src="Resources\article1.jpg" alt="Archival photo of early disaster relief efforts" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">History</p>
-            <h3>Evolution of Disaster Laws in the Philippines</h3>
-            <p class="muted">The Philippine disaster management system traces its origin to 1941, when President Manuel L. Quezon issued Executive Order No. 335.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-1')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
+    launcher.addEventListener('click', function () {
+      panel.classList.contains('is-open') ? closeChat() : openChat();
+    });
+    closeBtn.addEventListener('click', closeChat);
 
-        <article class="article-card article-carousel__slide">
-          <img src="Resources\article 3.jpg" alt="COA disaster risk reduction governance conference" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">Governance</p>
-            <h3>Developing a Governance Framework on DRRM</h3>
-            <p class="muted">The Commission on Audit conducted a disaster risk reduction conference on July 30, 2013, at the COA Professional Development Center.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-2')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
+    panel.querySelectorAll('[data-close-chat]').forEach(function (link) {
+      link.addEventListener('click', closeChat);
+    });
 
-        <article class="article-card article-carousel__slide">
-          <img src="Resources\article 4.jpg" alt="Disaster scene illustrating need for accounting guide" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">Policy</p>
-            <h3>Why Do We Need an Accounting Guide?</h3>
-            <p class="muted">Republic Act No. 10121, better known as the Philippine Disaster Risk Reduction and Management Act of 2010.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-3')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
+    function addMessage(text, who) {
+      var msg = document.createElement('div');
+      msg.className = 'chat-msg chat-msg--' + who;
+      var p = document.createElement('p');
+      p.textContent = text;
+      var time = document.createElement('time');
+      var now = new Date();
+      var h = now.getHours() % 12 || 12;
+      var m = ('0' + now.getMinutes()).slice(-2);
+      time.textContent = h + ':' + m + ' ' + (now.getHours() >= 12 ? 'PM' : 'AM');
+      msg.appendChild(p);
+      msg.appendChild(time);
+      body.appendChild(msg);
+      body.scrollTop = body.scrollHeight;
+    }
 
-        <article class="article-card article-carousel__slide">
-          <img src="Resources/art5.jpg" alt="Aerial photo of disaster-affected community" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">Field notes</p>
-            <h3>Field Perspectives on DRRM Governance</h3>
-            <p class="muted">On-the-ground notes from the Commission on Audit's 2013 disaster risk reduction conference series.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-4')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      input.value = '';
+      setTimeout(function () {
+        addMessage('Thanks — for specific figures, please check the Reports section, or reach the Public Information Office in the footer for anything not covered there.', 'bot');
+      }, 500);
+    });
+  })();
+</script>
 
-        <article class="article-card article-carousel__slide">
-          <img src="Resources/art6.jpg" alt="Auditing emergency procurement" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">Procurement</p>
-            <h3>Auditing Emergency Procurement Rules</h3>
-            <p class="muted">How negotiated procurement is monitored during calamity response.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-5')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
-
-        <article class="article-card article-carousel__slide">
-          <img src="Resources/art7.jpg" alt="Tracing donor fund reconciliation" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">Finance</p>
-            <h3>Tracing Donor Fund Reconciliation</h3>
-            <p class="muted">Matching international aid pledges to actual disbursements.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-6')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
-
-        <article class="article-card article-carousel__slide">
-          <img src="Resources/art8.jpg" alt="Inside the citizen participatory audit" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">CPA</p>
-            <h3>Inside the Citizen Participatory Audit</h3>
-            <p class="muted">How community volunteers help auditors spot red flags early.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-7')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
-
-        <article class="article-card article-carousel__slide">
-          <img src="Resources/art9.jpg" alt="Lessons from Typhoon Yolanda recovery" loading="lazy">
-          <div class="article-card__body">
-            <p class="card__kicker">Tacloban</p>
-            <h3>Lessons From Typhoon Yolanda Recovery</h3>
-            <p class="muted">A decade-later look at rebuilding and fund controls.</p>
-            <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-8')">Read the full article <span>&#8594;</span></a>
-          </div>
-        </article>
-      </div>
-
-      <button class="carousel-btn article-carousel__arrow article-carousel__arrow--next" id="newsCarouselNext" type="button" aria-label="Next articles">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </button>
-    </div>
-
-    <div class="article-carousel__dots" id="newsCarouselDots" role="tablist" aria-label="Select article slide"></div>
-
-    <div class="section__more">
-      <button class="btn btn--outline" type="button" onclick="document.getElementById('modal-articles-gallery').showModal()">Read more articles</button>
-    </div>
-
-    <dialog id="modal-articles-gallery" class="modal modal--wide" onclick="if(event.target===this){this.close()}">
-      <div class="modal__panel modal__panel--wide">
-        <button class="modal__close" onclick="document.getElementById('modal-articles-gallery').close()" aria-label="Close">&#10005;</button>
-        <p class="card__kicker">News &amp; articles</p>
-        <h3>All articles</h3>
-
-        <div class="card-grid card-grid--3">
-          <article class="article-card">
-            <img src="Resources\article1.jpg" alt="Evolution of disaster laws in the Philippines" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">History</p>
-              <h4>Evolution of Disaster Laws in the Philippines</h4>
-              <p class="muted">Traces the system back to Executive Order No. 335, signed in 1941.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-1')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources\article 3.jpg" alt="Developing governance framework on DRRM" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Governance</p>
-              <h4>Developing a Governance Framework on DRRM</h4>
-              <p class="muted">Highlights from the COA disaster risk reduction conference, July 30, 2013.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-2')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources\article 4.jpg" alt="Why do we need an accounting guide" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Policy</p>
-              <h4>Why Do We Need an Accounting Guide?</h4>
-              <p class="muted">Context around RA 10121, the Philippine DRRM Act of 2010.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-3')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art5.jpg" alt="Auditing emergency procurement" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Procurement</p>
-              <h4>Auditing Emergency Procurement Rules</h4>
-              <p class="muted">How negotiated procurement is monitored during calamity response.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-5')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art6.jpg" alt="Tracing donor fund reconciliation" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Finance</p>
-              <h4>Tracing Donor Fund Reconciliation</h4>
-              <p class="muted">Matching international aid pledges to actual disbursements.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-6')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources\art7.jpg" alt="Inside the citizen participatory audit" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">CPA</p>
-              <h4>Inside the Citizen Participatory Audit</h4>
-              <p class="muted">How community volunteers help auditors spot red flags early.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-7')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art8.jpg" alt="Lessons from Typhoon Yolanda recovery" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Tacloban</p>
-              <h4>Lessons From Typhoon Yolanda Recovery</h4>
-              <p class="muted">A decade-later look at rebuilding and fund controls.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-8')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art5.jpg" alt="Aerial photo of disaster-affected community" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Field notes</p>
-              <h4>Field Perspectives on DRRM Governance</h4>
-              <p class="muted">On-the-ground notes from the Commission's 2013 conference series.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-4')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/10.jpg" alt="Quick response fund explainer" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Quick Response Fund</p>
-              <h4>Understanding the Quick Response Fund</h4>
-              <p class="muted">How the QRF is triggered, released, and reconciled after a calamity declaration.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-9')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art11.jpg" alt="Barangay officials reviewing calamity fund documents" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Local government</p>
-              <h4>How Barangays Access Calamity Funds</h4>
-              <p class="muted">The paper trail from national allocation down to the barangay disaster fund.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-10')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art12.jpg" alt="Auditors reviewing a post-disaster needs assessment" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Assessment</p>
-              <h4>Auditing Post-Disaster Needs Assessments</h4>
-              <p class="muted">Why early damage estimates matter for how rehabilitation funds get sized.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-11')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art13.jpg" alt="Local government unit disaster fund meeting" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Governance</p>
-              <h4>The Role of LGUs in Disaster Fund Utilization</h4>
-              <p class="muted">Where local discretion ends and national audit oversight begins.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-12')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art14.jpeg" alt="Open data dashboard for disaster spending" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Transparency</p>
-              <h4>Transparency Tools: Open Data for Disaster Spending</h4>
-              <p class="muted">Inside the public datasets that let citizens trace calamity peso-for-peso.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-13')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art15.jpg" alt="Typhoon Odette fund tracking case study" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Case study</p>
-              <h4>Case Study: Typhoon Odette Fund Tracking</h4>
-              <p class="muted">A regional breakdown of how relief and rehab funds moved after Odette.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-14')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-          <article class="article-card">
-            <img src="Resources/art16.jpg" alt="Engineers inspecting resilient infrastructure" loading="lazy">
-            <div class="article-card__body">
-              <p class="card__kicker">Standards</p>
-              <h4>Building Resilience: Infrastructure Audit Standards</h4>
-              <p class="muted">The technical checklist auditors use to flag under-built flood control projects.</p>
-              <a href="javascript:void(0)" class="card__link" onclick="openArticle('article-15')">Read the full article <span>&#8594;</span></a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </dialog>
-
-    
-    <dialog id="articlePanel" class="article-panel article-panel--split" onclick="if(event.target===this){closeArticlePanel('articlePanel')}">
-      <div class="article-panel__panel">
-        <button class="article-panel__close" onclick="closeArticlePanel('articlePanel')" aria-label="Close">&#10005;</button>
-
-        <div class="article-panel__split">
-          <div class="article-panel__upnext">
-            <p class="article-panel__upnext-label">Up next</p>
-            <div class="article-fan__row">
-              <div class="article-fan__stage vsl-stage" id="articleFanStage">
-              <div id="vslDataSource" hidden>
-              <article class="article-fan__card" data-article-id="article-1" tabindex="0">
-                <img src="Resources\article1.jpg" alt="Evolution of disaster laws in the Philippines" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Evolution of Disaster Laws in the Philippines</h4>
-                  <p>Traces the system back to Executive Order No. 335, signed in 1941.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-2" tabindex="0">
-                <img src="Resources\article 3.jpg" alt="Developing governance framework on DRRM" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Developing a Governance Framework on DRRM</h4>
-                  <p>Highlights from the COA disaster risk reduction conference, July 30, 2013.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-3" tabindex="0">
-                <img src="Resources\article 4.jpg" alt="Why do we need an accounting guide" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Why Do We Need an Accounting Guide?</h4>
-                  <p>Context around RA 10121, the Philippine DRRM Act of 2010.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-4" tabindex="0">
-                <img src="Resources/art5.jpg" alt="Aerial photo of disaster-affected community" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Field Perspectives on DRRM Governance</h4>
-                  <p>On-the-ground notes from the Commission's 2013 conference series.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-5" tabindex="0">
-                <img src="Resources/art6.jpg" alt="Auditing emergency procurement" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Auditing Emergency Procurement Rules</h4>
-                  <p>How negotiated procurement is monitored during calamity response.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-6" tabindex="0">
-                <img src="Resources/art7.jpg" alt="Tracing donor fund reconciliation" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Tracing Donor Fund Reconciliation</h4>
-                  <p>Matching international aid pledges to actual disbursements.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-7" tabindex="0">
-                <img src="Resources/art8.jpg" alt="Inside the citizen participatory audit" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Inside the Citizen Participatory Audit</h4>
-                  <p>How community volunteers help auditors spot red flags early.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-8" tabindex="0">
-                <img src="Resources/art9.jpg" alt="Lessons from Typhoon Yolanda recovery" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Lessons From Typhoon Yolanda Recovery</h4>
-                  <p>A decade-later look at rebuilding and fund controls.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-9" tabindex="0">
-                <img src="Resources/10.jpg" alt="Quick response fund explainer" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Understanding the Quick Response Fund</h4>
-                  <p>How the QRF is triggered, released, and reconciled after a calamity declaration.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-10" tabindex="0">
-                <img src="Resources/art11.jpg" alt="Barangay officials reviewing calamity fund documents" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>How Barangays Access Calamity Funds</h4>
-                  <p>The paper trail from national allocation down to the barangay disaster fund.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-11" tabindex="0">
-                <img src="Resources/art12.jpg" alt="Auditors reviewing a post-disaster needs assessment" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Auditing Post-Disaster Needs Assessments</h4>
-                  <p>Why early damage estimates matter for how rehabilitation funds get sized.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-12" tabindex="0">
-                <img src="Resources/art13.jpg" alt="Local government unit disaster fund meeting" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>The Role of LGUs in Disaster Fund Utilization</h4>
-                  <p>Where local discretion ends and national audit oversight begins.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-13" tabindex="0">
-                <img src="Resources/art14.jpeg" alt="Open data dashboard for disaster spending" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Transparency Tools: Open Data for Disaster Spending</h4>
-                  <p>Inside the public datasets that let citizens trace calamity peso-for-peso.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-14" tabindex="0">
-                <img src="Resources/art15.jpg" alt="Typhoon Odette fund tracking case study" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Case Study: Typhoon Odette Fund Tracking</h4>
-                  <p>A regional breakdown of how relief and rehab funds moved after Odette.</p>
-                </div>
-              </article>
-              <article class="article-fan__card" data-article-id="article-15" tabindex="0">
-                <img src="Resources/art16.jpg" alt="Engineers inspecting resilient infrastructure" loading="lazy">
-                <div class="article-fan__overlay"></div>
-                <div class="article-fan__body">
-                  <h4>Building Resilience: Infrastructure Audit Standards</h4>
-                  <p>The technical checklist auditors use to flag under-built flood control projects.</p>
-                </div>
-              </article>
-              </div>
-
-              <div class="vsl-slides" id="vslSlides">
-                <div class="vsl-slide" data-current>
-                  <div class="vsl-slide__inner">
-                    <div class="vsl-slide-image__wrapper">
-                      <img class="vsl-slide-image" src="" alt="">
-                      <div class="vsl-slide-image__fade" aria-hidden="true"></div>
-                    </div>
-                    <div class="vsl-slide-text">
-                      <p class="vsl-slide-text__kicker" data-kicker></p>
-                      <h4 class="vsl-slide-text__title" data-title></h4>
-                      <p class="vsl-slide-text__desc" data-description></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="vsl-slide" data-next>
-                  <div class="vsl-slide__inner">
-                    <div class="vsl-slide-image__wrapper">
-                      <img class="vsl-slide-image" src="" alt="">
-                      <div class="vsl-slide-image__fade" aria-hidden="true"></div>
-                    </div>
-                    <div class="vsl-slide-text">
-                      <p class="vsl-slide-text__kicker" data-kicker></p>
-                      <h4 class="vsl-slide-text__title" data-title></h4>
-                      <p class="vsl-slide-text__desc" data-description></p>
-                    </div>
-                  </div>
-                </div>
-                <div class="vsl-slide" data-previous>
-                  <div class="vsl-slide__inner">
-                    <div class="vsl-slide-image__wrapper">
-                      <img class="vsl-slide-image" src="" alt="">
-                      <div class="vsl-slide-image__fade" aria-hidden="true"></div>
-                    </div>
-                    <div class="vsl-slide-text">
-                      <p class="vsl-slide-text__kicker" data-kicker></p>
-                      <h4 class="vsl-slide-text__title" data-title></h4>
-                      <p class="vsl-slide-text__desc" data-description></p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="vsl-infos" id="vslInfos">
-                <div class="vsl-slide-info" data-current>
-                  <div class="vsl-slide-info__inner">
-                    <div class="vsl-slide-info--text__wrapper">
-                      <div class="vsl-slide-info--text" data-kicker><span></span></div>
-                      <div class="vsl-slide-info--text" data-title><span></span></div>
-                      <div class="vsl-slide-info--text" data-description><span></span></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="vsl-slide-info" data-next>
-                  <div class="vsl-slide-info__inner">
-                    <div class="vsl-slide-info--text__wrapper">
-                      <div class="vsl-slide-info--text" data-kicker><span></span></div>
-                      <div class="vsl-slide-info--text" data-title><span></span></div>
-                      <div class="vsl-slide-info--text" data-description><span></span></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="vsl-slide-info" data-previous>
-                  <div class="vsl-slide-info__inner">
-                    <div class="vsl-slide-info--text__wrapper">
-                      <div class="vsl-slide-info--text" data-kicker><span></span></div>
-                      <div class="vsl-slide-info--text" data-title><span></span></div>
-                      <div class="vsl-slide-info--text" data-description><span></span></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              </div>
-            </div>
-            <div class="article-fan__controls">
-              <div class="article-carousel__dots" id="articleFanDots" role="tablist" aria-label="Select article"></div>
-            </div>
-          </div>
-
-          <div class="article-panel__scroll" id="articlePanelScroll">
-            <img class="article-panel__hero" id="articlePanelHero" src="" alt="">
-            <div class="article-panel__body">
-              <p class="card__kicker" id="articlePanelKicker"></p>
-              <h2 id="articlePanelTitle"></h2>
-              <p class="article-panel__meta">COA Newsroom</p>
-              <div id="articlePanelText"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </dialog>
-  </section>
-
-  
-  <section class="section faq-section" id="faq" data-nav-theme="light">
-    <div class="faq-scanline"></div>
-    <span class="faq-coord faq-coord--tl">SEC.04 / FAQ</span>
-    <span class="faq-coord faq-coord--br">COA · DA-2026</span>
-
-    <div class="faq-layout">
-
-      <div class="faq-phone">
-        <div class="phone-frame">
-          <div class="btn1"></div><div class="btn2"></div><div class="btn3"></div><div class="btn4"></div>
-          <div class="phone-frame__int">
-            <div class="faq-chat-card">
-              <div class="faq-chat-card__header">
-                <div class="faq-chat-card__logo" style="background-image:url('images/logo.png')"></div>
-                <div>
-                  <strong>DisasterAudit Support</strong>
-                  <span><span class="faq-chat-card__status-dot"></span> Usually replies in minutes</span>
-                </div>
-              </div>
-              <div class="faq-chat-card__body">
-                <div class="chat-msg chat-msg--bot">
-                  <div class="chat-msg__avatar" style="background-image:url('images/logo.png')"></div>
-                  <div>
-                    <div class="chat-msg__bubble">Hi! I'm here to help you look into calamity fund reports. What would you like to check?</div>
-                    <span class="chat-msg__time">12:01 PM</span>
-                  </div>
-                </div>
-                <div class="chat-msg chat-msg--user">
-                  <div>
-                    <div class="chat-msg__bubble">Paano ko po makikita ang allocation ng Region V calamity fund?</div>
-                    <span class="chat-msg__time">12:02 PM</span>
-                  </div>
-                </div>
-                <div class="chat-msg chat-msg--bot">
-                  <div class="chat-msg__avatar" style="background-image:url('images/logo.png')"></div>
-                  <div>
-                    <div class="chat-msg__bubble">You can check it under the Reports section — it lists allocations by region along with the audit findings for each release.</div>
-                    <span class="chat-msg__time">12:03 PM</span>
-                  </div>
-                </div>
-              </div>
-              <div class="faq-chat-card__quick-replies">
-                <button type="button" onclick="document.getElementById('reports').scrollIntoView({behavior:'smooth'})">View reports</button>
-                <button type="button" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact PIO</button>
-              </div>
-              <form class="faq-chat-card__input" onsubmit="return false;">
-                <label for="faqChatInput" class="sr-only">Type a message</label>
-                <input id="faqChatInput" type="text" placeholder="Type your question…">
-                <button type="submit" aria-label="Send message">&#10148;</button>
-              </form>
-            </div>
-          </div>
-          <div class="phone-frame__top">
-            <div class="phone-frame__camera"><div class="int"></div></div>
-            <div class="phone-frame__speaker"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="faq-content">
-        <div class="faq-content__intro">
-          <p class="eyebrow">FAQs</p>
-          <h2>How can we help you?</h2>
-          <p>Can't find what you're looking for? Reach the COA Public Information Office through the contact details in the footer.</p>
-        </div>
-        <div class="accordion">
-          <details class="accordion__item" open>
-            <summary>What is the "Disaster Audit" site by the Commission on Audit, and what should I know about its purpose?</summary>
-            <p>The Disaster Audit site is an official Commission on Audit (COA) portal that publishes audit findings, summaries, and related documentation on disaster fund utilization.</p>
-          </details>
-          <details class="accordion__item">
-            <summary>Who should I contact for media, research, or official inquiries?</summary>
-            <p>Reach the COA Public Information Office through the contact details listed in the footer below.</p>
-          </details>
-          <details class="accordion__item">
-            <summary>How is personal or sensitive information handled on the site?</summary>
-            <p>All data shared through the portal is handled in accordance with the Data Privacy Act of 2012.</p>
-          </details>
-          <details class="accordion__item">
-            <summary>How do I request additional information or report a records request?</summary>
-            <p>Submit a request through the Freedom of Information (FOI) portal linked in Quick Links.</p>
-          </details>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  </main>
-
-  
-  <footer class="site-footer" id="contact" data-nav-theme="dark">
-    <div id="grainient-footer-bg" class="grainient-container" aria-hidden="true"></div>
-
-    <div class="footer-hero">
-      <div class="footer-brand-block">
-        <a href="#home" class="footer-brand__mark">
-          <img src="Resources/image(1).png" alt="Commission on Audit logo">
-          <span class="footer-brand__name">
-            <strong>Disaster Audit</strong>
-            <em>Commission on Audit</em>
-          </span>
-        </a>
-        <p>A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.</p>
-        <span class="footer-seal">Republic of the Philippines</span>
-      </div>
-
-      <nav class="footer-col" aria-label="Site sections">
-        <h4>Explore</h4>
-        <ul>
-          <li><a href="#reports">Reports</a></li>
-          <li><a href="#library">Documentation library</a></li>
-          <li><a href="#news">Articles &amp; briefings</a></li>
-          <li><a href="#map">Risk map</a></li>
-          <li><a href="#faq">FAQs</a></li>
-        </ul>
-      </nav>
-
-      <nav class="footer-col" aria-label="Partner agencies and resources">
-        <h4>Resources</h4>
-        <ul>
-          <li><a href="https://www.foi.gov.ph/" target="_blank" rel="noopener">FOI portal</a></li>
-          <li><a href="https://ndrrmc.gov.ph" target="_blank" rel="noopener">NDRRMC</a></li>
-          <li><a href="https://dilg.gov.ph" target="_blank" rel="noopener">DILG</a></li>
-          <li><a href="https://dswd.gov.ph" target="_blank" rel="noopener">DSWD</a></li>
-        </ul>
-      </nav>
-
-      <div class="footer-col footer-col--contact">
-        <h4>Public Information Office</h4>
-        <address>
-          <p>Commission on Audit Central Office<br>Commonwealth Avenue, Quezon City, Philippines</p>
-          <p><a href="mailto:pio@coa.gov.ph">pio@coa.gov.ph</a></p>
-          <p><a href="tel:+6329310026">(02) 8931-7592</a></p>
-        </address>
-      </div>
-    </div>
-
-    <div class="footer-meta">
-      <p>&copy; 2026 Commission on Audit, Republic of the Philippines. All rights reserved.</p>
-      <div class="footer-meta__right">
-        <div class="footer-legal">
-          <a href="#">Privacy notice</a>
-          <a href="#">Data Privacy Act (RA 10173)</a>
-          <a href="#">Terms of use</a>
-        </div>
-        <div class="footer-language-selector">
-          <select id="language-select" aria-label="Select language">
-            <option value="English">English</option>
-            <option value="Filipino">Filipino</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="mainindex.js?v=2"></script>
-
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      window.reportsFlowMenu = createFlowingMenu(document.getElementById('reportsFlowMenu'), [
-        {
-          text: 'DRRM Assessment',
-          modalId: 'modal-report1',
-          image: 'Resources/images.jpg',
-          items: [ { label: 'DRRM Assessment', modalId: 'modal-report1' } ]
-        },
-        {
-          text: 'Typhoon Yolanda',
-          modalId: 'modal-report2',
-          image: 'Resources/Building Report Sec.jpg',
-          items: [ { label: 'A Special Report on Typhoon Yolanda', modalId: 'modal-report2' } ]
-        },
-        {
-          text: 'Citizen Participatory Audit',
-          modalId: 'modal-report3',
-          image: 'Resources/coa building.jpg',
-          items: [ { label: 'Citizen Participatory Audit', modalId: 'modal-report3' } ]
-        },
-        {
-          text: 'Flood Control',
-          modalId: 'modal-report4',
-          image: 'Resources/REPLACE-flood-control.jpg',
-          items: [ { label: 'Audit of Flood Control Infrastructure Projects', modalId: 'modal-report4' } ]
-        },
-        {
-          text: 'Relief Goods Tracking',
-          modalId: 'modal-report5',
-          image: 'Resources/REPLACE-relief-goods.jpg',
-          items: [ { label: 'Tracking Relief Goods Distribution', modalId: 'modal-report5' } ]
-        },
-        {
-          text: 'Early Warning Systems',
-          modalId: 'modal-report6',
-          image: 'Resources/REPLACE-early-warning.jpg',
-          items: [ { label: 'Evaluation of Early Warning Systems', modalId: 'modal-report6' } ]
-        },
-        {
-          text: 'Cash-for-Work Program',
-          modalId: 'modal-report7',
-          image: 'Resources/REPLACE-cash-for-work.jpg',
-          items: [ { label: 'Audit of Cash-for-Work Program Disbursements', modalId: 'modal-report7' } ]
-        },
-        {
-          text: 'School Infrastructure',
-          modalId: 'modal-report8',
-          image: 'Resources/REPLACE-school-infra.jpg',
-          items: [ { label: 'School Infrastructure', modalId: 'modal-report8' } ]
-        },
-        {
-          text: 'Water & Sanitation',
-          modalId: 'modal-report9',
-          image: 'Resources/REPLACE-wash.jpg',
-          items: [ { label: 'Water & Sanitation', modalId: 'modal-report9' } ]
-        },
-        {
-          text: 'Livelihood Recovery',
-          modalId: 'modal-report10',
-          image: 'Resources/REPLACE-livelihood.jpg',
-          items: [ { label: 'Livelihood Recovery Grants Audit', modalId: 'modal-report10' } ]
-        }
-      ], {
-        speed: 16,
-        textColor: '#3D0C16',
-        bgColor: '#F9F6F0',
-        marqueeBgColor: '#7F1425',
-        marqueeTextColor: '#F9F6F0',
-        borderColor: 'rgba(61,12,22,.18)'
+<script>
+  // Mobile nav toggle — plain JS, no dependencies
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var nav = document.getElementById('mobileNav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', function () {
+      var open = nav.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      nav.setAttribute('aria-hidden', open ? 'false' : 'true');
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+    nav.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        nav.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        nav.setAttribute('aria-hidden', 'true');
       });
+    });
+  })();
 
-      const reportsModal = document.getElementById('modal-reports-overview');
-      if (reportsModal) {
-        reportsModal.addEventListener('close', function () {
-          const menu = document.getElementById('reportsFlowMenu');
-          if (!menu) return;
-          menu.querySelectorAll('.menu__item.is-open').forEach(function (openItem) {
-            openItem.classList.remove('is-open');
-            const link = openItem.querySelector('.menu__item-link');
-            if (link) link.setAttribute('aria-expanded', 'false');
-          });
+  // Filter chips — same pattern used for both the reports and the
+  // documentation library rows: click a chip, show only matching items.
+  function setupFilter(rowId, containerId, itemSelector) {
+    var row = document.getElementById(rowId);
+    var container = document.getElementById(containerId);
+    if (!row || !container) return;
+    var chips = Array.prototype.slice.call(row.querySelectorAll('.filter-chip'));
+    var items = Array.prototype.slice.call(container.querySelectorAll(itemSelector));
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var filter = chip.getAttribute('data-filter');
+        items.forEach(function (item) {
+          var match = filter === 'all' || item.getAttribute('data-category') === filter;
+          item.style.display = match ? '' : 'none';
         });
-      }
-    });
-  </script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      createFlowingMenu(document.getElementById('partnersFlowMenu'), [
-        { link: 'https://dswd.gov.ph', text: 'DSWD', image: 'images/dswddocu2.jpg' },
-        { link: 'https://ndrrmc.gov.ph', text: 'NDRRMC', image: 'images/ndrrmcdoc1.jpg' },
-        { link: 'https://dilg.gov.ph', text: 'DILG', image: 'images/DILGdocu3.jpg' },
-        { link: '#contact', text: 'COA', image: 'images/docsec3.jpg' }
-      ], {
-        speed: 18,
-        textColor: '#F9F6F0',
-        bgColor: '#3D0C16',
-        marqueeBgColor: '#F9F6F0',
-        marqueeTextColor: '#3D0C16',
-        borderColor: 'rgba(249,246,240,.2)'
       });
     });
-  </script>
-
-  
-  <script type="module">
-
-import { Renderer, Program, Mesh, Triangle } from 'https://esm.sh/ogl@1.0.6';
-
-const hexToRgb = hex => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return [1, 1, 1];
-  return [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255];
-};
-
-const vertex = `#version 300 es
-in vec2 position;
-void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
-}
-`;
-
-const fragment = `#version 300 es
-precision highp float;
-uniform vec2 iResolution;
-uniform float iTime;
-uniform float uTimeSpeed;
-uniform float uColorBalance;
-uniform float uWarpStrength;
-uniform float uWarpFrequency;
-uniform float uWarpSpeed;
-uniform float uWarpAmplitude;
-uniform float uBlendAngle;
-uniform float uBlendSoftness;
-uniform float uRotationAmount;
-uniform float uNoiseScale;
-uniform float uGrainAmount;
-uniform float uGrainScale;
-uniform float uGrainAnimated;
-uniform float uContrast;
-uniform float uGamma;
-uniform float uSaturation;
-uniform vec2 uCenterOffset;
-uniform float uZoom;
-uniform vec3 uColor1;
-uniform vec3 uColor2;
-uniform vec3 uColor3;
-out vec4 fragColor;
-#define S(a,b,t) smoothstep(a,b,t)
-mat2 Rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
-vec2 hash(vec2 p){p=vec2(dot(p,vec2(2127.1,81.17)),dot(p,vec2(1269.5,283.37)));return fract(sin(p)*43758.5453);}
-float noise(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.0-2.0*f);float n=mix(mix(dot(-1.0+2.0*hash(i+vec2(0.0,0.0)),f-vec2(0.0,0.0)),dot(-1.0+2.0*hash(i+vec2(1.0,0.0)),f-vec2(1.0,0.0)),u.x),mix(dot(-1.0+2.0*hash(i+vec2(0.0,1.0)),f-vec2(0.0,1.0)),dot(-1.0+2.0*hash(i+vec2(1.0,1.0)),f-vec2(1.0,1.0)),u.x),u.y);return 0.5+0.5*n;}
-void mainImage(out vec4 o, vec2 C){
-  float t=iTime*uTimeSpeed;
-  vec2 uv=C/iResolution.xy;
-  float ratio=iResolution.x/iResolution.y;
-  vec2 tuv=uv-0.5+uCenterOffset;
-  tuv/=max(uZoom,0.001);
-
-  float degree=noise(vec2(t*0.1,tuv.x*tuv.y)*uNoiseScale);
-  tuv.y*=1.0/ratio;
-  tuv*=Rot(radians((degree-0.5)*uRotationAmount+180.0));
-  tuv.y*=ratio;
-
-  float frequency=uWarpFrequency;
-  float ws=max(uWarpStrength,0.001);
-  float amplitude=uWarpAmplitude/ws;
-  float warpTime=t*uWarpSpeed;
-  tuv.x+=sin(tuv.y*frequency+warpTime)/amplitude;
-  tuv.y+=sin(tuv.x*(frequency*1.5)+warpTime)/(amplitude*0.5);
-
-  vec3 colLav=uColor1;
-  vec3 colOrg=uColor2;
-  vec3 colDark=uColor3;
-  float b=uColorBalance;
-  float s=max(uBlendSoftness,0.0);
-  mat2 blendRot=Rot(radians(uBlendAngle));
-  float blendX=(tuv*blendRot).x;
-  float edge0=-0.3-b-s;
-  float edge1=0.2-b+s;
-  float v0=0.5-b+s;
-  float v1=-0.3-b-s;
-  vec3 layer1=mix(colDark,colOrg,S(edge0,edge1,blendX));
-  vec3 layer2=mix(colOrg,colLav,S(edge0,edge1,blendX));
-  vec3 col=mix(layer1,layer2,S(v0,v1,tuv.y));
-
-  vec2 grainUv=uv*max(uGrainScale,0.001);
-  if(uGrainAnimated>0.5){grainUv+=vec2(iTime*0.05);}
-  float grain=fract(sin(dot(grainUv,vec2(12.9898,78.233)))*43758.5453);
-  col+=(grain-0.5)*uGrainAmount;
-
-  col=(col-0.5)*uContrast+0.5;
-  float luma=dot(col,vec3(0.2126,0.7152,0.0722));
-  col=mix(vec3(luma),col,uSaturation);
-  col=pow(max(col,0.0),vec3(1.0/max(uGamma,0.001)));
-  col=clamp(col,0.0,1.0);
-
-  o=vec4(col,1.0);
-}
-void main(){
-  vec4 o=vec4(0.0);
-  mainImage(o,gl_FragCoord.xy);
-  fragColor=o;
-}
-`;
-
-const DEFAULTS = {
-  timeSpeed: 0.25,
-  colorBalance: 0.0,
-  warpStrength: 1.0,
-  warpFrequency: 5.0,
-  warpSpeed: 2.0,
-  warpAmplitude: 50.0,
-  blendAngle: 0.0,
-  blendSoftness: 0.05,
-  rotationAmount: 500.0,
-  noiseScale: 2.0,
-  grainAmount: 0.1,
-  grainScale: 2.0,
-  grainAnimated: false,
-  contrast: 1.5,
-  gamma: 1.0,
-  saturation: 1.0,
-  centerX: 0.0,
-  centerY: 0.0,
-  zoom: 0.9,
-  color1: '#FF9FFC',
-  color2: '#5227FF',
-  color3: '#B497CF'
-};
-
-export function createGrainient(container, options = {}) {
-  console.log('[Grainient] init started, container:', container);
-
-  if (!container) {
-    console.error('[Grainient] no container element was passed in — check the id in your HTML matches the id you pass to createGrainient().');
-    return { update() {}, destroy() {} };
   }
+  setupFilter('reports-filter-row', 'reports-grid', '.card');
 
-  if (!window.WebGL2RenderingContext) {
-    console.error('[Grainient] this browser does not support WebGL2 at all.');
-  }
+  // Library filter panel — pick a place (region) and/or event (disaster
+  // type), Apply narrows the strip to items matching both (when both are
+  // set); Clear resets everything back to showing all of them.
+  (function () {
+    var openBtn = document.getElementById('libraryFilterBtn');
+    var overlay = document.getElementById('library-filter-overlay');
+    var closeBtn = document.getElementById('libraryFilterClose');
+    var applyBtn = document.getElementById('libraryFilterApply');
+    var clearBtn = document.getElementById('libraryFilterClear');
+    var label = document.getElementById('libraryFilterLabel');
+    var countBadge = document.getElementById('libraryFilterCount');
+    var strip = document.getElementById('library-strip');
+    if (!openBtn || !overlay || !strip) return;
 
-  
-  let renderer;
-  try {
-    renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
-    });
-  } catch (err) {
-    console.error('[Grainient] failed to create the WebGL2 renderer:', err);
-    return { update() {}, destroy() {} };
-  }
+    var pills = Array.prototype.slice.call(overlay.querySelectorAll('.pill'));
+    var items = Array.prototype.slice.call(strip.querySelectorAll('figure'));
+    var selected = { category: null, region: null };
 
-  const gl = renderer.gl;
-  const canvas = gl.canvas;
-  canvas.style.width = '100%';
-  canvas.style.height = '100%';
-  canvas.style.display = 'block';
-  container.appendChild(canvas);
-  console.log('[Grainient] canvas appended to container. Container size:', container.getBoundingClientRect());
-
-  const geometry = new Triangle(gl);
-  let program;
-  try {
-    program = new Program(gl, {
-      vertex,
-      fragment,
-      uniforms: {
-      iTime: { value: 0 },
-      iResolution: { value: new Float32Array([1, 1]) },
-      uTimeSpeed: { value: 0.25 },
-      uColorBalance: { value: 0.0 },
-      uWarpStrength: { value: 1.0 },
-      uWarpFrequency: { value: 5.0 },
-      uWarpSpeed: { value: 2.0 },
-      uWarpAmplitude: { value: 50.0 },
-      uBlendAngle: { value: 0.0 },
-      uBlendSoftness: { value: 0.05 },
-      uRotationAmount: { value: 500.0 },
-      uNoiseScale: { value: 2.0 },
-      uGrainAmount: { value: 0.1 },
-      uGrainScale: { value: 2.0 },
-      uGrainAnimated: { value: 0.0 },
-      uContrast: { value: 1.5 },
-      uGamma: { value: 1.0 },
-      uSaturation: { value: 1.0 },
-      uCenterOffset: { value: new Float32Array([0, 0]) },
-      uZoom: { value: 0.9 },
-      uColor1: { value: new Float32Array([1, 1, 1]) },
-      uColor2: { value: new Float32Array([1, 1, 1]) },
-      uColor3: { value: new Float32Array([1, 1, 1]) }
-    }
-  });
-  } catch (err) {
-    console.error('[Grainient] shader failed to compile — this usually means WebGL2 (#version 300 es) is not supported here:', err);
-    return { update() {}, destroy() {} };
-  }
-  console.log('[Grainient] shader program compiled successfully.');
-
-  const mesh = new Mesh(gl, { geometry, program });
-
-  const setSize = () => {
-    const rect = container.getBoundingClientRect();
-    const w = Math.max(1, Math.floor(rect.width));
-    const h = Math.max(1, Math.floor(rect.height));
-    renderer.setSize(w, h);
-    const res = program.uniforms.iResolution.value;
-    res[0] = gl.drawingBufferWidth;
-    res[1] = gl.drawingBufferHeight;
-    renderer.render({ scene: mesh });
-  };
-
-  const ro = new ResizeObserver(setSize);
-  ro.observe(container);
-  setSize();
-
-  let raf = 0;
-  let isVisible = true;
-  let isPageVisible = !document.hidden;
-  const t0 = performance.now();
-
-  let loggedFirstFrame = false;
-  const loop = t => {
-    program.uniforms.iTime.value = (t - t0) * 0.001;
-    renderer.render({ scene: mesh });
-    if (!loggedFirstFrame) {
-      loggedFirstFrame = true;
-      console.log('[Grainient] first frame rendered.');
-    }
-    raf = requestAnimationFrame(loop);
-  };
-
-  const tryStart = () => { if (isVisible && isPageVisible && raf === 0) raf = requestAnimationFrame(loop); };
-  const tryStop = () => { if (raf !== 0) { cancelAnimationFrame(raf); raf = 0; } };
-
-  const io = new IntersectionObserver(
-    ([entry]) => { isVisible = entry.isIntersecting; isVisible ? tryStart() : tryStop(); },
-    { threshold: 0 }
-  );
-  io.observe(container);
-
-  const onVisibility = () => {
-    isPageVisible = !document.hidden;
-    isPageVisible ? tryStart() : tryStop();
-  };
-  document.addEventListener('visibilitychange', onVisibility);
-
-  
-  function update(opts = {}) {
-    const o = { ...DEFAULTS, ...opts };
-    const u = program.uniforms;
-    u.uTimeSpeed.value = o.timeSpeed;
-    u.uColorBalance.value = o.colorBalance;
-    u.uWarpStrength.value = o.warpStrength;
-    u.uWarpFrequency.value = o.warpFrequency;
-    u.uWarpSpeed.value = o.warpSpeed;
-    u.uWarpAmplitude.value = o.warpAmplitude;
-    u.uBlendAngle.value = o.blendAngle;
-    u.uBlendSoftness.value = o.blendSoftness;
-    u.uRotationAmount.value = o.rotationAmount;
-    u.uNoiseScale.value = o.noiseScale;
-    u.uGrainAmount.value = o.grainAmount;
-    u.uGrainScale.value = o.grainScale;
-    u.uGrainAnimated.value = o.grainAnimated ? 1.0 : 0.0;
-    u.uContrast.value = o.contrast;
-    u.uGamma.value = o.gamma;
-    u.uSaturation.value = o.saturation;
-    u.uCenterOffset.value = new Float32Array([o.centerX, o.centerY]);
-    u.uZoom.value = o.zoom;
-    u.uColor1.value = new Float32Array(hexToRgb(o.color1));
-    u.uColor2.value = new Float32Array(hexToRgb(o.color2));
-    u.uColor3.value = new Float32Array(hexToRgb(o.color3));
-  }
-
-  update(options);
-  tryStart();
-
-  function destroy() {
-    tryStop();
-    ro.disconnect();
-    io.disconnect();
-    document.removeEventListener('visibilitychange', onVisibility);
-    try { container.removeChild(canvas); } catch (e) {  }
-  }
-
-  
-  
-  return { update, destroy };
-}
-
-    createGrainient(document.getElementById('grainient-bg'), {
-      color1: '#3D3A31',
-      color2: '#7F1425',
-      color3: '#F9F6F0',
-      timeSpeed: 0.25,
-      colorBalance: 0.1,
-      warpStrength: 1,
-      warpFrequency: 5,
-      warpSpeed: 2,
-      warpAmplitude: 70,
-      blendAngle: 0,
-      blendSoftness: 0.15,
-      rotationAmount: 600,
-      noiseScale: 2,
-      grainAmount: 0.1,
-      grainScale: 2,
-      grainAnimated: false,
-      contrast: 1.5,
-      gamma: 1,
-      saturation: 1,
-      centerX: 0,
-      centerY: 0,
-      zoom: 1.6
-    });
-
-    
-    
-    
-    
-    
-    var mapSectionBg = document.getElementById('grainient-map-bg');
-    if (mapSectionBg) {
-      createGrainient(mapSectionBg, {
-        color1: '#3D3A31',
-        color2: '#7F1425',
-        color3: '#170709',
-        timeSpeed: 0.25,
-        colorBalance: 0.1,
-        warpStrength: 1,
-        warpFrequency: 5,
-        warpSpeed: 2,
-        warpAmplitude: 70,
-        blendAngle: 0,
-        blendSoftness: 0.15,
-        rotationAmount: 600,
-        noiseScale: 2,
-        grainAmount: 0.1,
-        grainScale: 2,
-        grainAnimated: false,
-        contrast: 1.5,
-        gamma: 1,
-        saturation: 1,
-        centerX: 0,
-        centerY: 0,
-        zoom: 1.6
-      });
-    }
-
-    
-    
-    var footerBg = document.getElementById('grainient-footer-bg');
-    if (footerBg) {
-      createGrainient(footerBg, {
-        color1: '#3D3A31',
-        color2: '#7F1425',
-        color3: '#170709',
-        timeSpeed: 0.25,
-        colorBalance: 0.1,
-        warpStrength: 1,
-        warpFrequency: 5,
-        warpSpeed: 2,
-        warpAmplitude: 70,
-        blendAngle: 0,
-        blendSoftness: 0.15,
-        rotationAmount: 600,
-        noiseScale: 2,
-        grainAmount: 0.1,
-        grainScale: 2,
-        grainAnimated: false,
-        contrast: 1.5,
-        gamma: 1,
-        saturation: 1,
-        centerX: 0,
-        centerY: 0,
-        zoom: 1.6
-      });
-    }
-  </script>
-
-  
-  <script>
-    (function () {
-      var navContainer = document.querySelector('.card-nav-container');
-      if (!navContainer) return;
-
-      var ticking = false;
-      var SCROLL_THRESHOLD = 60;
-
-      
-      var themeSections = Array.prototype.slice.call(document.querySelectorAll('[data-nav-theme]'));
-
-      function currentThemeAt(probeY) {
-        
-        for (var i = 0; i < themeSections.length; i++) {
-          var el = themeSections[i];
-          var rect = el.getBoundingClientRect();
-          if (rect.top <= probeY && rect.bottom > probeY) {
-            return el.getAttribute('data-nav-theme') || 'dark';
-          }
-        }
-        
-        return probeY < 0 ? 'dark' : null;
-      }
-
-      var NAV_THEMES = ['light', 'tinted', 'dark'];
-
-      function setTheme(theme) {
-        NAV_THEMES.forEach(function (t) {
-          navContainer.classList.toggle('theme-' + t, t === theme);
+    pills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        var group = pill.closest('.filter-pills').getAttribute('data-filter-type');
+        var value = pill.getAttribute('data-value');
+        var alreadyActive = pill.classList.contains('is-active');
+        overlay.querySelectorAll('.filter-pills[data-filter-type="' + group + '"] .pill').forEach(function (p) {
+          p.classList.remove('is-active');
         });
-      }
-
-      function updateNavState() {
-        var scrolled = window.scrollY > SCROLL_THRESHOLD;
-
-        if (scrolled) {
-          navContainer.classList.add('is-scrolled');
-
-          
-          var navHeight = navContainer.offsetHeight || 60;
-          var theme = currentThemeAt(navHeight / 2) || 'dark';
-          setTheme(theme);
+        if (alreadyActive) {
+          selected[group] = null;
         } else {
-          navContainer.classList.remove('is-scrolled');
-          setTheme('dark');
+          pill.classList.add('is-active');
+          selected[group] = value;
         }
-
-        ticking = false;
-      }
-
-      window.addEventListener('scroll', function () {
-        if (!ticking) {
-          window.requestAnimationFrame(updateNavState);
-          ticking = true;
-        }
-      }, { passive: true });
-
-      window.addEventListener('resize', function () {
-        if (!ticking) {
-          window.requestAnimationFrame(updateNavState);
-          ticking = true;
-        }
-      }, { passive: true });
-
-      updateNavState();
-    })();
-  </script>
-
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var revealTargets = document.querySelectorAll('.section, .hero__grid, .footer-banner');
-
-      var revealObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-            revealObserver.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15, rootMargin: '0px 0px -80px 0px' });
-
-      revealTargets.forEach(function (target) {
-        revealObserver.observe(target);
       });
     });
-  </script>
-   
-  </body>
-  </html> 
+
+    function applyFilters() {
+      items.forEach(function (item) {
+        var matchCategory = !selected.category || item.getAttribute('data-category') === selected.category;
+        var matchRegion = !selected.region || item.getAttribute('data-region') === selected.region;
+        item.style.display = (matchCategory && matchRegion) ? '' : 'none';
+      });
+      var count = (selected.category ? 1 : 0) + (selected.region ? 1 : 0);
+      if (count > 0) {
+        label.textContent = 'Filter by place or event';
+        countBadge.textContent = String(count);
+        countBadge.hidden = false;
+      } else {
+        label.textContent = 'Filter by place or event';
+        countBadge.hidden = true;
+      }
+    }
+
+    function openPanel() {
+      overlay.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      if (closeBtn) closeBtn.focus();
+    }
+    function closePanel() {
+      overlay.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closePanel();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePanel();
+    });
+
+    if (applyBtn) applyBtn.addEventListener('click', function () {
+      applyFilters();
+      closePanel();
+    });
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      selected.category = null;
+      selected.region = null;
+      pills.forEach(function (p) { p.classList.remove('is-active'); });
+      applyFilters();
+    });
+  })();
+
+  // "See more" floating panels — same bottom-sheet pattern for both the
+  // reports panel and the documentation library panel. Purely class-driven
+  // (CSS handles the show/hide + animation), so it can't get stuck
+  // regardless of the device's motion settings or transition timing.
+  function setupModal(openBtnId, overlayId, closeBtnId) {
+    var openBtn = document.getElementById(openBtnId);
+    var overlay = document.getElementById(overlayId);
+    var closeBtn = document.getElementById(closeBtnId);
+    if (!openBtn || !overlay || !closeBtn) return;
+
+    function openModal() {
+      overlay.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      closeBtn.focus();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
+    });
+  }
+  setupModal('reports-see-more', 'reports-modal-overlay', 'reports-modal-close');
+  setupModal('library-see-more', 'library-modal-overlay', 'library-modal-close');
+</script>
+</body>
+</html>
