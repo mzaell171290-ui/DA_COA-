@@ -594,6 +594,297 @@
 
   /* reports — a plain stacked list, one full-width card per row */
   #reports-grid{display:flex; flex-direction:column; gap:1em;}
+
+
+  /* =====================================================================
+   DOME GALLERY — immersive 3D photo sphere
+   Reads its images straight from the existing .gallery-card markup,
+   so nothing in the library is ever hidden or dropped — it all
+   just gets a more dramatic way to be seen.
+
+   No boxed card here on purpose: the wrap has no background, border,
+   or shadow of its own — it blends straight into whatever section
+   background sits behind it (set per-instance via --dome-bg below).
+   ===================================================================== */
+
+body.dg-scroll-lock { overflow: hidden; }
+
+.dome-wrap {
+  position: relative;
+  width: 100%;
+  --dome-bg: var(--paper);
+}
+
+.dome-wrap--teaser { height: clamp(360px, 46vw, 480px); --dome-bg: var(--paper-dim); }
+.dome-wrap--full   { height: clamp(450px, 62vh, 630px); margin-top: 1.2em; --dome-bg: var(--paper); }
+
+.dome-hint {
+  position: absolute;
+  left: 50%;
+  bottom: .6em;
+  transform: translateX(-50%);
+  z-index: 6;
+  margin: 0;
+  padding: .5em 1.2em;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  animation: dome-hint-in .6s ease .5s forwards;
+}
+@keyframes dome-hint-in { to { opacity: .85; } }
+.dome-wrap.is-interacted .dome-hint { opacity: 0 !important; transition: opacity .4s ease; }
+
+.dome-gallery {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  --radius: 520px;
+  --circ: calc(var(--radius) * 3.14159);
+  --rot-y: calc((360deg / var(--segments-x, 20)) / 2);
+  --rot-x: calc((360deg / var(--segments-y, 20)) / 2);
+  --item-width: calc(var(--circ) / var(--segments-x, 20));
+  --item-height: calc(var(--circ) / var(--segments-y, 20));
+  --spot-x: 50%;
+  --spot-y: 40%;
+}
+
+.dome-gallery * { box-sizing: border-box; }
+
+.dome-gallery__stage,
+.dome-gallery__sphere,
+.dome-item,
+.dome-item__tile {
+  transform-style: preserve-3d;
+}
+
+.dome-gallery__main {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.dome-gallery__main:active { cursor: grabbing; }
+
+/* soft warm spotlight that tracks the pointer — a hint of maroon, not a
+   spotlight cone, so it reads as ambient light rather than an effect */
+.dome-gallery__main::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(420px 420px at var(--spot-x) var(--spot-y), rgba(168,51,71,.12), transparent 65%);
+  mix-blend-mode: multiply;
+  transition: opacity .3s ease;
+}
+
+.dome-gallery__stage {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  perspective: calc(var(--radius) * 2.1);
+  perspective-origin: 50% 50%;
+  contain: layout paint size;
+}
+
+.dome-gallery__sphere {
+  transform: translateZ(calc(var(--radius) * -1));
+  will-change: transform;
+}
+
+.dome-item {
+  width: calc(var(--item-width) * var(--item-size-x, 2));
+  height: calc(var(--item-height) * var(--item-size-y, 2));
+  position: absolute;
+  top: -999px; bottom: -999px; left: -999px; right: -999px;
+  margin: auto;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  transition: transform .35s cubic-bezier(.22,.9,.32,1), opacity .5s ease;
+  opacity: 0;
+  transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x, 2) - 1) / 2)) + var(--rot-y-delta, 0deg)))
+    rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y, 2) - 1) / 2)) + var(--rot-x-delta, 0deg)))
+    translateZ(var(--radius)) scale(.82);
+}
+.dome-item.is-visible { opacity: 1; transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x, 2) - 1) / 2)) + var(--rot-y-delta, 0deg)))
+    rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y, 2) - 1) / 2)) + var(--rot-x-delta, 0deg)))
+    translateZ(var(--radius)) scale(1); }
+
+.dome-item__tile {
+  position: absolute;
+  inset: 7px;
+  display: block;
+  border: none;
+  padding: 0;
+  border-radius: var(--radius-m);
+  background: linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+  overflow: hidden;
+  backface-visibility: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
+  transform: translateZ(0) scale(1);
+  box-shadow: 0 10px 24px -16px rgba(23,7,9,.5);
+  transition: box-shadow .3s ease, transform .3s ease;
+}
+.dome-item__tile:hover,
+.dome-item__tile:focus-visible {
+  box-shadow: 0 18px 34px -16px rgba(23,7,9,.55), 0 0 0 1px var(--gold);
+  transform: translateZ(0) scale(1.045);
+  outline: none;
+}
+
+.dome-item__tile img {
+  width: 100%; height: 100%; object-fit: cover;
+  pointer-events: none;
+  backface-visibility: hidden;
+  filter: grayscale(.7) sepia(.25) saturate(1.15) contrast(1.03);
+  transition: filter .5s ease, transform 6s linear;
+  transform: scale(1.02);
+}
+.dome-item__tile:hover img,
+.dome-item__tile:focus-visible img {
+  filter: grayscale(0) sepia(0) saturate(1.08) contrast(1.03);
+  transform: scale(1.09);
+}
+
+/* edges of the sphere dissolve into whatever's behind the wrap, rather
+   than being clipped by a visible box */
+.dome-gallery__overlay,
+.dome-gallery__overlay--blur {
+  position: absolute; inset: 0; margin: auto; z-index: 3; pointer-events: none;
+}
+.dome-gallery__overlay {
+  background-image: radial-gradient(rgba(0,0,0,0) 62%, var(--dome-bg) 100%);
+}
+.dome-gallery__overlay--blur {
+  -webkit-mask-image: radial-gradient(rgba(0,0,0,0) 70%, var(--dome-bg) 92%);
+  mask-image: radial-gradient(rgba(0,0,0,0) 70%, var(--dome-bg) 92%);
+  backdrop-filter: blur(2px);
+}
+.dome-gallery__edge {
+  position: absolute; left: 0; right: 0; height: 80px; z-index: 5; pointer-events: none;
+}
+.dome-gallery__edge--top { top: 0; background: linear-gradient(to bottom, var(--dome-bg), transparent); }
+.dome-gallery__edge--bottom { bottom: 0; background: linear-gradient(to top, var(--dome-bg), transparent); }
+
+/* =====================================================================
+   FULLSCREEN LIGHTBOX — shared singleton, appended once to <body> so it
+   can pop out to the full viewport regardless of how small the dome's
+   own container is.
+   ===================================================================== */
+.dome-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+.dome-lightbox.is-open { display: block; }
+
+.dome-lightbox__scrim {
+  position: absolute; inset: 0;
+  background: rgba(23,7,9,.82);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.dome-lightbox.is-open .dome-lightbox__scrim { opacity: 1; }
+
+.dome-lightbox__stage {
+  position: absolute; inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2em;
+  padding: 2em 1.5em;
+  pointer-events: none;
+}
+
+.dome-lightbox__frame {
+  position: relative;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  box-shadow: 0 40px 90px -24px rgba(0,0,0,.55);
+  background: var(--maroon-950);
+  pointer-events: auto;
+}
+.dome-lightbox__frame img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.dome-lightbox__plaque {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 1em 1.7em 1.15em;
+  border-radius: var(--radius-m);
+  border-top: 3px solid var(--maroon-700);
+  box-shadow: var(--shadow-card);
+  max-width: min(640px, 86vw);
+  text-align: center;
+  opacity: 0;
+  pointer-events: auto;
+}
+.dome-lightbox__plaque .card__kicker { color: var(--maroon-700); margin: 0 0 .25em; }
+.dome-lightbox__plaque h4 {
+  margin: 0 0 .3em; font-family: var(--font-display); font-weight: 600; color: var(--maroon-900);
+  font-size: clamp(1rem, 1.3vw + .6rem, 1.3rem);
+}
+.dome-lightbox__plaque time { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-soft); }
+
+.dome-lightbox__close {
+  position: fixed; top: 1.5em; right: 1.5em; z-index: 10000;
+  width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: var(--paper-dim); color: var(--maroon-700); font-size: 1rem;
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: background .2s ease, color .2s ease, opacity .3s ease;
+}
+.dome-lightbox__close:hover { background: var(--maroon-700); color: #fff; }
+.dome-lightbox.is-open .dome-lightbox__close { opacity: 1; pointer-events: auto; }
+
+/* ---------- Grid / dome toggle (inside modal) ---------- */
+.gallery-view-toggle {
+  display: inline-flex; gap: .3em; padding: .3em; margin: 0 0 1.2em;
+  background: var(--paper-dim); border-radius: 999px; border: 1px solid var(--line);
+}
+.view-toggle-btn {
+  border: none; background: transparent; padding: .55em 1.2em; border-radius: 999px;
+  font-family: var(--font-body); font-size: .82rem; font-weight: 600; color: var(--ink-soft);
+  cursor: pointer; transition: background .2s ease, color .2s ease;
+}
+.view-toggle-btn.is-active { background: var(--maroon-700); color: #fff; }
+.view-toggle-btn:not(.is-active):hover { color: var(--maroon-700); }
+
+.card-grid--gallery.is-hidden,
+.gallery-card.is-hidden,
+.dome-wrap.is-hidden { display: none; }
+
+/* --- MOBILE (<= 767px) — phones --- */
+@media (max-width: 767px) {
+  .dome-wrap--teaser { height: clamp(300px, 78vw, 380px); }
+  .dome-wrap--full { height: 56vh; }
+  .dome-lightbox__plaque h4 { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dome-item, .dome-item__tile, .dome-item__tile img,
+  .dome-lightbox__plaque, .dome-lightbox__frame, .dome-lightbox__scrim { transition: none !important; }
+}
 </style>
 </head>
 <body>
@@ -833,133 +1124,83 @@
     </div>
   </div>
 
-  <section class="section section--tinted" id="library">
-    <div class="section__head">
+ <section class="section section--tinted" id="library" data-nav-theme="tinted">
+    <div class="section__head section__head--center">
       <p class="eyebrow">Documentation library</p>
-      <h2>Source photos &amp; field records</h2>
-      <p class="section__lede">Swipe through field documentation submitted alongside liquidation reports.</p>
+      <h2>Field records, on the record.</h2>
+      <p class="section__lede">Visual documentation of Commission on Audit's disaster response audits, field operations, and rehabilitation assessments — ensuring transparency and fiscal accountability where it matters most.</p>
     </div>
 
-    <button class="filter-btn" id="libraryFilterBtn" type="button" aria-haspopup="dialog" aria-controls="libraryFilterPanel">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-      <span id="libraryFilterLabel">Filter by place or event</span>
-      <span class="filter-btn__count" id="libraryFilterCount" hidden>0</span>
-    </button>
-
-    <div class="photo-strip" id="library-strip">
-      <figure data-category="typhoon" data-region="Region VIII"><div class="ph">Relief goods packing<br>Tacloban warehouse</div><figcaption>Region VIII · Jan 2026</figcaption></figure>
-      <figure data-category="earthquake" data-region="CAR"><div class="ph">Temporary shelter site<br>Bangued</div><figcaption>CAR · Nov 2025</figcaption></figure>
-      <figure data-category="flood" data-region="Region II"><div class="ph">Evacuation center<br>Tuguegarao</div><figcaption>Region II · Oct 2025</figcaption></figure>
-      <figure data-category="typhoon" data-region="Region V"><div class="ph">Barangay disbursement<br>ledger sign-off</div><figcaption>Region V · Sep 2025</figcaption></figure>
+    <div class="filter-row" id="library-filter-row">
+      <button class="filter-chip is-active" type="button" data-filter="all">All</button>
+      <button class="filter-chip" type="button" data-filter="tacloban">Tacloban</button>
+      <button class="filter-chip" type="button" data-filter="briefing">Briefing</button>
+      <button class="filter-chip" type="button" data-filter="gacpa">GACPA</button>
+      <button class="filter-chip" type="button" data-filter="relief">Relief</button>
     </div>
 
-    <button class="btn btn--outline btn--block see-more" id="library-see-more" type="button" aria-haspopup="dialog" aria-controls="library-modal">See more documentation</button>
+    <div class="dome-wrap dome-wrap--teaser" aria-label="Rotating preview of the documentation library — drag to look around">
+      <div class="dome-gallery" id="library-dome-teaser" data-dome-gallery data-fit="0.55" data-min-radius="420" data-segments="18" data-idle-delay="2200"></div>
+      <p class="dome-hint">Drag to look around</p>
+    </div>
+
+    <div class="section__more">
+      <button class="btn btn--outline" type="button" id="library-gallery-trigger" onclick="document.getElementById('modal-library-gallery').showModal()">View full gallery</button>
+      
+    </div>
+
+    <dialog id="modal-library-gallery" class="modal modal--wide" onclick="if(event.target===this){this.close()}">
+      <div class="modal__panel modal__panel--wide">
+        <button class="modal__close" onclick="document.getElementById('modal-library-gallery').close()" aria-label="Close">&#10005;</button>
+        <p class="card__kicker">Documentation library</p>
+        <h3>Full photo gallery</h3>
+
+        <div class="gallery-view-toggle" role="group" aria-label="Gallery view">
+          <button type="button" class="view-toggle-btn is-active" data-view="dome">Immersive view</button>
+          <button type="button" class="view-toggle-btn" data-view="grid">Grid view</button>
+        </div>
+
+        <div class="dome-wrap dome-wrap--full" id="library-dome-full-wrap" aria-label="Immersive rotating gallery — drag to look around, click a photo to view it larger">
+          <div class="dome-gallery" id="library-dome-full" data-dome-gallery data-fit="0.62" data-min-radius="560" data-segments="20" data-idle-delay="3200"></div>
+          <p class="dome-hint">Drag to look around · Click a photo to enlarge</p>
+        </div>
+
+        <div class="card-grid card-grid--gallery is-hidden" id="library-grid-fallback">
+          <figure class="gallery-card"><img src="Resources/1.jpg" alt="Commissioner Mendoza at DRRM Seminar" loading="lazy"><figcaption><p class="card__kicker">DRRM Seminar</p><h4>Commissioner Mendoza @ DRRM Seminar during GACPA Convention</h4><time>May 24, 2014</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/2.jpg" alt="Relief operations for typhoon Yolanda victims" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Relief Operations for the victims of typhoon Yolanda</h4><time>Nov 8, 2013</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/3.jpg" alt="Briefing for COA auditors" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Briefing for COA Auditors of about DRR</h4><time>Nov 20, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/4.jpg" alt="Post-Yolanda rehabilitation site visit" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Post-Yolanda Rehabilitation Site Visit</h4><time>Jan 15, 2015</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/5.jpg" alt="Joint disaster simulation exercise" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Joint Disaster Simulation Exercise</h4><time>Mar 3, 2016</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/6.jpg" alt="Distribution of relief packs in Region VIII" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Distribution of Relief Packs in Region VIII</h4><time>Aug 19, 2016</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/7.jpg" alt="GACPA national convention highlights" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>GACPA National Convention Highlights</h4><time>May 22, 2017</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/8.jpg" alt="Auditor's briefing on calamity fund utilization" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Auditor's Briefing on Calamity Fund Utilization</h4><time>Feb 9, 2018</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/9.jpg" alt="Field validation of evacuation centers" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Field Validation of Evacuation Centers</h4><time>Jul 14, 2018</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/10.jpg" alt="Typhoon Yolanda memorial program" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Typhoon Yolanda Memorial Program</h4><time>Nov 8, 2018</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/11.jpg" alt="Cash-for-work program monitoring visit" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Cash-for-Work Program Monitoring Visit</h4><time>Apr 2, 2019</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/12.jpg" alt="Local DRRM officers training workshop" loading="lazy"><figcaption><p class="card__kicker">DRRM Seminar</p><h4>Local DRRM Officers Training Workshop</h4><time>Jun 27, 2019</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/13.jpg" alt="National disaster response drill" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>National Disaster Response Drill</h4><time>Sep 5, 2019</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/14.jpg" alt="Flood relief goods inventory check" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Flood Relief Goods Inventory Check</h4><time>Jan 20, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/15.jpg" alt="Special audit team deployment briefing" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Special Audit Team Deployment Briefing</h4><time>May 11, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/16.jpg" alt="Post-disaster needs assessment briefing" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Post-Disaster Needs Assessment Briefing</h4><time>Aug 3, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/17.jpg" alt="Regional GACPA chapter meeting" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>Regional GACPA Chapter Meeting</h4><time>Oct 14, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/18.jpg" alt="Site inspection of flood control projects" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Site Inspection of Flood Control Projects</h4><time>Feb 8, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/19.jpg" alt="Tacloban resettlement site audit" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Tacloban Resettlement Site Audit</h4><time>Apr 25, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/20.jpg" alt="Family assistance package distribution" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Family Assistance Package Distribution</h4><time>Jun 30, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/21.jpg" alt="Inter-agency coordination meeting" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Inter-Agency Coordination Meeting</h4><time>Sep 16, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/22.jpg" alt="Relief goods warehousing inspection" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Relief Goods Warehousing Inspection</h4><time>Dec 1, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/23.jpg" alt="Auditors' roundtable on fund utilization" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Auditors' Roundtable on Fund Utilization</h4><time>Mar 9, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/24.jpg" alt="Calamity fund orientation for new auditors" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Calamity Fund Orientation for New Auditors</h4><time>Jun 21, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/25.jpg" alt="GACPA regional convention recap" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>GACPA Regional Convention Recap</h4><time>Sep 2, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/26.jpg" alt="Evacuation center readiness check" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Evacuation Center Readiness Check</h4><time>Jan 18, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/27.jpg" alt="Ongoing rehabilitation projects review" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Ongoing Rehabilitation Projects Review</h4><time>Apr 7, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/28.jpg" alt="Emergency shelter assistance monitoring" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Emergency Shelter Assistance Monitoring</h4><time>Jul 22, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/29.jpg" alt="Disaster risk reduction summit" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Disaster Risk Reduction Summit</h4><time>Oct 30, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/30.jpg" alt="Year-end relief operations report" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Year-End Relief Operations Report</h4><time>Dec 15, 2023</time></figcaption></figure>
+        </div>
+      </div>
+    </dialog>
   </section>
 
-  <!-- Filter panel — choose a place (region) and/or an event (disaster
-       type) to narrow the documentation strip -->
-  <div class="modal-overlay" id="library-filter-overlay">
-    <div class="modal-panel" id="libraryFilterPanel" role="dialog" aria-modal="true" aria-labelledby="libraryFilterTitle">
-      <div class="modal-panel__handle" aria-hidden="true"></div>
-      <div class="modal-panel__head">
-        <h3 id="libraryFilterTitle">Filter documentation</h3>
-        <button class="modal-panel__close" id="libraryFilterClose" type="button" aria-label="Close">✕</button>
-      </div>
-      <div class="modal-panel__body">
-        <div class="filter-group">
-          <h4>Event</h4>
-          <div class="filter-pills" data-filter-type="category">
-            <button class="pill" data-value="typhoon">Typhoon</button>
-            <button class="pill" data-value="earthquake">Earthquake</button>
-            <button class="pill" data-value="flood">Flood</button>
-          </div>
-        </div>
-        <div class="filter-group">
-          <h4>Place</h4>
-          <div class="filter-pills" data-filter-type="region">
-            <button class="pill" data-value="Region VIII">Region VIII</button>
-            <button class="pill" data-value="CAR">CAR</button>
-            <button class="pill" data-value="Region II">Region II</button>
-            <button class="pill" data-value="Region V">Region V</button>
-          </div>
-        </div>
-      </div>
-      <div class="modal-panel__actions">
-        <button class="btn btn--outline" id="libraryFilterClear" type="button">Clear</button>
-        <button class="btn btn--solid" id="libraryFilterApply" type="button">Apply filters</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating "more documentation" panel — same floating pattern as the reports one -->
-  <div class="modal-overlay" id="library-modal-overlay">
-    <div class="modal-panel" id="library-modal" role="dialog" aria-modal="true" aria-labelledby="library-modal-title">
-      <div class="modal-panel__handle" aria-hidden="true"></div>
-      <div class="modal-panel__head">
-        <h3 id="library-modal-title">More documentation</h3>
-        <button class="modal-panel__close" id="library-modal-close" type="button" aria-label="Close">✕</button>
-      </div>
-      <div class="modal-panel__body">
-        <button class="filter-btn" id="libraryModalFilterBtn" type="button" aria-haspopup="dialog" aria-controls="libraryFilterPanel">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          <span id="libraryModalFilterLabel">Filter by place or event</span>
-          <span class="filter-btn__count" id="libraryModalFilterCount" hidden>0</span>
-        </button>
-
-        <article class="modern-card doc-card" data-category="flood" data-region="Region VIII">
-          <div class="doc-card__thumb">Relief distribution site<br>Ormoc</div>
-          <div class="modern-card__top"><span class="modern-card__tag">Flood</span></div>
-          <h4>Relief distribution site — Ormoc</h4>
-          <p>Field documentation submitted alongside the Region VIII quarterly liquidation report.</p>
-          <div class="modern-card__foot"><span>Region VIII</span><a href="#">View →</a></div>
-        </article>
-
-        <article class="modern-card doc-card" data-category="earthquake" data-region="CAR">
-          <div class="doc-card__thumb">Temporary housing units<br>La Trinidad</div>
-          <div class="modern-card__top"><span class="modern-card__tag">Earthquake</span></div>
-          <h4>Temporary housing units — La Trinidad</h4>
-          <p>Site inspection photos submitted with the shelter assistance liquidation report.</p>
-          <div class="modern-card__foot"><span>CAR</span><a href="#">View →</a></div>
-        </article>
-
-        <article class="modern-card doc-card" data-category="flood" data-region="Region III">
-          <div class="doc-card__thumb">Dike repair progress<br>San Mateo</div>
-          <div class="modern-card__top"><span class="modern-card__tag">Flood</span></div>
-          <h4>Dike repair progress — San Mateo</h4>
-          <p>Progress photos attached to the flood control infrastructure fund report.</p>
-          <div class="modern-card__foot"><span>Region III</span><a href="#">View →</a></div>
-        </article>
-
-        <article class="modern-card doc-card" data-category="typhoon" data-region="Region V">
-          <div class="doc-card__thumb">Farm input handover<br>Daraga</div>
-          <div class="modern-card__top"><span class="modern-card__tag">Typhoon</span></div>
-          <h4>Farm input handover — Daraga</h4>
-          <p>Distribution records submitted with the agricultural aid liquidation report.</p>
-          <div class="modern-card__foot"><span>Region V</span><a href="#">View →</a></div>
-        </article>
-      </div>
-    </div>
-  </div>
-
-  <section class="section section--risk" id="map">
-    <div class="section__head">
-      <p class="eyebrow">Risk map</p>
-      <h2>Exposure by region</h2>
-      <p class="section__lede">Aggregate risk tier across regions currently under active calamity fund monitoring.</p>
-    </div>
-    <div class="risk-panel">
-      <div class="risk-video">
-        <video controls playsinline poster="images/risk-video-poster.jpg">
-          <source src="videos/disaster-risk-audit.mp4" type="video/mp4">
-          Your browser doesn't support embedded video.
-        </video>
-      </div>
-      <div class="risk-panel__text">
-        <h3>From disaster risk to audit trail</h3>
-        <p>A short briefing on how calamity fund exposure is tracked across at-risk regions, and how that risk picture shapes what COA chooses to audit next.</p>
-      </div>
-    </div>
-  </section>
 
   <section class="section section--tinted" id="news">
     <div class="section__head">
@@ -1341,6 +1582,566 @@
   }
   setupModal('reports-see-more', 'reports-modal-overlay', 'reports-modal-close');
   setupModal('library-see-more', 'library-modal-overlay', 'library-modal-close');
+
+
+  /* =====================================================================
+   DOME GALLERY (vanilla JS)
+   Turns any set of `.gallery-card` figures into a draggable, inertial,
+   auto-rotating 3D photo sphere with a cinematic enlarge/close animation.
+   No build step, no framework — works alongside the site's existing
+   plain <script> files. Uses GSAP (already loaded on the page) for the
+   showcase moments; everything else is dependency-free.
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var REDUCE_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var HAS_GSAP = typeof window.gsap !== 'undefined';
+
+  function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+  function normalizeAngle(d) { return ((d % 360) + 360) % 360; }
+  function wrapAngleSigned(deg) {
+    var a = (((deg + 180) % 360) + 360) % 360;
+    return a - 180;
+  }
+
+  /* ---- pull image + caption data straight from existing markup ---- */
+  function readImagesFrom(selector) {
+    var nodes = Array.prototype.slice.call(document.querySelectorAll(selector));
+    return nodes.map(function (fig) {
+      var img = fig.querySelector('img');
+      if (!img) return null;
+      var kicker = fig.querySelector('.card__kicker');
+      var title = fig.querySelector('h4');
+      var time = fig.querySelector('time');
+      return {
+        src: img.getAttribute('src') || '',
+        alt: img.getAttribute('alt') || '',
+        kicker: kicker ? kicker.textContent.trim() : '',
+        title: title ? title.textContent.trim() : '',
+        date: time ? time.textContent.trim() : ''
+      };
+    }).filter(function (d) { return d && d.src; });
+  }
+
+  /* ---- build the coordinate grid + assign images cyclically so every
+     image in the source set is used (repeating only once the pool is
+     exhausted) — nothing gets left out. ---- */
+  function buildItems(pool, segments) {
+    var xCols = [];
+    for (var i = 0; i < segments; i++) xCols.push(-(segments - 1) + i * 2);
+    var evenYs = [-4, -2, 0, 2, 4];
+    var oddYs = [-3, -1, 1, 3, 5];
+
+    var coords = [];
+    xCols.forEach(function (x, c) {
+      var ys = c % 2 === 0 ? evenYs : oddYs;
+      ys.forEach(function (y) { coords.push({ x: x, y: y, sizeX: 2, sizeY: 2 }); });
+    });
+
+    if (!pool.length) return coords.map(function (c) { return Object.assign({}, c, { src: '', alt: '' }); });
+
+    var used = coords.map(function (_, i) { return pool[i % pool.length]; });
+    for (var k = 1; k < used.length; k++) {
+      if (used[k].src === used[k - 1].src) {
+        for (var j = k + 1; j < used.length; j++) {
+          if (used[j].src !== used[k].src) {
+            var tmp = used[k]; used[k] = used[j]; used[j] = tmp;
+            break;
+          }
+        }
+      }
+    }
+    return coords.map(function (c, i) { return Object.assign({}, c, used[i]); });
+  }
+
+  function baseRotation(offsetX, offsetY, sizeX, sizeY, segments) {
+    var unit = 360 / segments / 2;
+    return {
+      rotateY: unit * (offsetX + (sizeX - 1) / 2),
+      rotateX: unit * (offsetY - (sizeY - 1) / 2)
+    };
+  }
+
+  /* ===================================================================
+     DomeGallery instance
+     =================================================================== */
+  function DomeGallery(root, images, opts) {
+    this.root = root;
+    this.images = images;
+    this.opts = Object.assign({
+      fit: 0.55,
+      minRadius: 460,
+      maxRadius: Infinity,
+      segments: 20,
+      maxVerticalRotationDeg: 8,
+      dragSensitivity: 22,
+      dragDampening: 2,
+      autoRotateSpeed: 0.035, // deg per frame
+      idleDelay: 2600
+    }, opts || {});
+
+    this.rotation = { x: 0, y: 0 };
+    this.dragging = false;
+    this.moved = false;
+    this.inertiaRAF = null;
+    this.autoRAF = null;
+    this.lastInteraction = 0;
+    this.focusedEl = null;
+
+    this._buildDOM();
+    this._buildTiles();
+    this._observeResize();
+    this._bindPointer();
+    if (!REDUCE_MOTION) this._startAutoRotate();
+    this._revealTiles();
+  }
+
+  DomeGallery.prototype._buildDOM = function () {
+    var root = this.root;
+    root.innerHTML =
+      '<main class="dome-gallery__main">' +
+      '<div class="dome-gallery__stage"><div class="dome-gallery__sphere"></div></div>' +
+      '<div class="dome-gallery__overlay"></div>' +
+      '<div class="dome-gallery__overlay--blur"></div>' +
+      '<div class="dome-gallery__edge dome-gallery__edge--top"></div>' +
+      '<div class="dome-gallery__edge dome-gallery__edge--bottom"></div>' +
+      '</main>';
+
+    this.main = root.querySelector('.dome-gallery__main');
+    this.stage = root.querySelector('.dome-gallery__stage');
+    this.sphere = root.querySelector('.dome-gallery__sphere');
+
+    root.style.setProperty('--segments-x', this.opts.segments);
+    root.style.setProperty('--segments-y', this.opts.segments);
+  };
+
+  DomeGallery.prototype._buildTiles = function () {
+    var items = buildItems(this.images, this.opts.segments);
+    var frag = document.createDocumentFragment();
+    var self = this;
+
+    items.forEach(function (it) {
+      if (!it.src) return;
+      var item = document.createElement('div');
+      item.className = 'dome-item';
+      item.style.setProperty('--offset-x', it.x);
+      item.style.setProperty('--offset-y', it.y);
+      item.style.setProperty('--item-size-x', it.sizeX);
+      item.style.setProperty('--item-size-y', it.sizeY);
+      item.dataset.offsetX = it.x;
+      item.dataset.offsetY = it.y;
+      item.dataset.sizeX = it.sizeX;
+      item.dataset.sizeY = it.sizeY;
+
+      var tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'dome-item__tile';
+      tile.setAttribute('aria-label', it.alt || it.title || 'Open image');
+      tile.dataset.kicker = it.kicker || '';
+      tile.dataset.title = it.title || '';
+      tile.dataset.date = it.date || '';
+
+      var img = document.createElement('img');
+      img.src = it.src;
+      img.alt = it.alt || '';
+      img.loading = 'lazy';
+      img.draggable = false;
+      tile.appendChild(img);
+
+      tile.addEventListener('click', function (e) {
+        if (self.moved || self.dragging) return;
+        self._openTile(tile, item);
+      });
+
+      item.appendChild(tile);
+      frag.appendChild(item);
+    });
+
+    this.sphere.appendChild(frag);
+    this._applyTransform(0, 0);
+  };
+
+  DomeGallery.prototype._revealTiles = function () {
+    var tiles = Array.prototype.slice.call(this.sphere.querySelectorAll('.dome-item'));
+    if (REDUCE_MOTION) { tiles.forEach(function (t) { t.classList.add('is-visible'); }); return; }
+    // gentle stagger so the sphere feels like it assembles itself
+    tiles.forEach(function (t, i) {
+      setTimeout(function () { t.classList.add('is-visible'); }, 8 * (i % 40));
+    });
+  };
+
+  DomeGallery.prototype._applyTransform = function (x, y) {
+    this.sphere.style.transform = 'translateZ(calc(var(--radius) * -1)) rotateX(' + x + 'deg) rotateY(' + y + 'deg)';
+  };
+
+  DomeGallery.prototype.setImages = function (images) {
+    var self = this;
+    this.images = images && images.length ? images : this.images;
+    // close any open enlarge view first
+    if (this.focusedEl) this._closeTile(this.focusedEl);
+    this._stopInertia();
+
+    var oldTiles = Array.prototype.slice.call(this.sphere.querySelectorAll('.dome-item'));
+    var rebuild = function () {
+      self.sphere.innerHTML = '';
+      self._buildTiles();
+      self._revealTiles();
+    };
+    if (oldTiles.length && !REDUCE_MOTION) {
+      oldTiles.forEach(function (t) { t.classList.remove('is-visible'); });
+      setTimeout(rebuild, 260);
+    } else {
+      rebuild();
+    }
+  };
+
+  DomeGallery.prototype._observeResize = function () {
+    var self = this;
+    var ro = new ResizeObserver(function (entries) {
+      var cr = entries[0].contentRect;
+      var w = Math.max(1, cr.width), h = Math.max(1, cr.height);
+      if (w < 10 || h < 10) return; // not visible yet (e.g. closed <dialog>)
+      var basis = w >= h * 1.3 ? w : Math.min(w, h);
+      var radius = clamp(basis * self.opts.fit, self.opts.minRadius, self.opts.maxRadius);
+      radius = Math.min(radius, h * 1.4);
+      self.root.style.setProperty('--radius', Math.round(radius) + 'px');
+    });
+    ro.observe(this.root);
+    this._ro = ro;
+  };
+
+  DomeGallery.prototype.refresh = function () {
+    var r = this.root.getBoundingClientRect();
+    if (r.width > 10) {
+      var basis = r.width >= r.height * 1.3 ? r.width : Math.min(r.width, r.height);
+      var radius = clamp(basis * this.opts.fit, this.opts.minRadius, this.opts.maxRadius);
+      radius = Math.min(radius, r.height * 1.4);
+      this.root.style.setProperty('--radius', Math.round(radius) + 'px');
+    }
+  };
+
+  /* ---------------- drag + inertia + idle auto-rotate ---------------- */
+  DomeGallery.prototype._markInteraction = function () {
+    this.lastInteraction = performance.now();
+    this.root.closest('.dome-wrap') && this.root.closest('.dome-wrap').classList.add('is-interacted');
+  };
+
+  DomeGallery.prototype._stopAutoRotate = function () {
+    if (this.autoRAF) { cancelAnimationFrame(this.autoRAF); this.autoRAF = null; }
+  };
+
+  DomeGallery.prototype._startAutoRotate = function () {
+    var self = this;
+    this._stopAutoRotate();
+    var step = function () {
+      var idleFor = performance.now() - self.lastInteraction;
+      if (!self.dragging && !self.focusedEl && idleFor > self.opts.idleDelay) {
+        var nextY = wrapAngleSigned(self.rotation.y + self.opts.autoRotateSpeed);
+        self.rotation.y = nextY;
+        self._applyTransform(self.rotation.x, nextY);
+      }
+      self.autoRAF = requestAnimationFrame(step);
+    };
+    this.autoRAF = requestAnimationFrame(step);
+  };
+
+  DomeGallery.prototype._stopInertia = function () {
+    if (this.inertiaRAF) { cancelAnimationFrame(this.inertiaRAF); this.inertiaRAF = null; }
+  };
+
+  DomeGallery.prototype._startInertia = function (vx, vy) {
+    var self = this;
+    var MAX_V = 1.4;
+    var vX = clamp(vx, -MAX_V, MAX_V) * 80;
+    var vY = clamp(vy, -MAX_V, MAX_V) * 80;
+    var frames = 0;
+    var d = clamp(this.opts.dragDampening, 0, 1);
+    var frictionMul = 0.94 + 0.055 * d;
+    var stopThreshold = 0.015 - 0.01 * d;
+    var maxFrames = Math.round(90 + 270 * d);
+    this._stopInertia();
+    var step = function () {
+      vX *= frictionMul; vY *= frictionMul;
+      if ((Math.abs(vX) < stopThreshold && Math.abs(vY) < stopThreshold) || ++frames > maxFrames) {
+        self.inertiaRAF = null; return;
+      }
+      var nextX = clamp(self.rotation.x - vY / 200, -self.opts.maxVerticalRotationDeg, self.opts.maxVerticalRotationDeg);
+      var nextY = wrapAngleSigned(self.rotation.y + vX / 200);
+      self.rotation = { x: nextX, y: nextY };
+      self._applyTransform(nextX, nextY);
+      self.inertiaRAF = requestAnimationFrame(step);
+    };
+    this.inertiaRAF = requestAnimationFrame(step);
+  };
+
+  DomeGallery.prototype._bindPointer = function () {
+    var self = this;
+    var startPos = null, startRot = null, pointerId = null;
+
+    this.main.addEventListener('pointerdown', function (e) {
+      if (self.focusedEl) return;
+      self._stopInertia();
+      self._markInteraction();
+      self.dragging = true;
+      self.moved = false;
+      startRot = { x: self.rotation.x, y: self.rotation.y };
+      startPos = { x: e.clientX, y: e.clientY, t: performance.now() };
+      pointerId = e.pointerId;
+      try { self.main.setPointerCapture(pointerId); } catch (err) {}
+    });
+
+    this.main.addEventListener('pointermove', function (e) {
+      if (!self.dragging || !startPos) return;
+      var dx = e.clientX - startPos.x, dy = e.clientY - startPos.y;
+      if (!self.moved && (dx * dx + dy * dy) > 16) self.moved = true;
+      var nextX = clamp(startRot.x - dy / self.opts.dragSensitivity, -self.opts.maxVerticalRotationDeg, self.opts.maxVerticalRotationDeg);
+      var nextY = wrapAngleSigned(startRot.y + dx / self.opts.dragSensitivity);
+      self.rotation = { x: nextX, y: nextY };
+      self._applyTransform(nextX, nextY);
+      var rect = self.root.getBoundingClientRect();
+      self.root.style.setProperty('--spot-x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+      self.root.style.setProperty('--spot-y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+    });
+
+    function end(e) {
+      if (!self.dragging) return;
+      self.dragging = false;
+      self._markInteraction();
+      if (startPos) {
+        var dt = Math.max(1, performance.now() - startPos.t);
+        var dx = (e.clientX != null ? e.clientX : startPos.x) - startPos.x;
+        var dy = (e.clientY != null ? e.clientY : startPos.y) - startPos.y;
+        var vx = clamp((dx / dt) * 16 / self.opts.dragSensitivity, -1.2, 1.2);
+        var vy = clamp((dy / dt) * 16 / self.opts.dragSensitivity, -1.2, 1.2);
+        if (Math.abs(vx) > 0.01 || Math.abs(vy) > 0.01) self._startInertia(vx, vy);
+      }
+      startPos = null;
+      setTimeout(function () { self.moved = false; }, 60);
+    }
+    this.main.addEventListener('pointerup', end);
+    this.main.addEventListener('pointercancel', end);
+    this.main.addEventListener('pointerleave', function () {
+      if (!self.dragging) self.root.style.setProperty('--spot-y', '-50%');
+    });
+  };
+
+  /* ---------------- shared fullscreen lightbox (singleton) ---------------- */
+  var sharedLightbox = null;
+  function getLightbox() {
+    if (sharedLightbox) return sharedLightbox;
+
+    var el = document.createElement('div');
+    el.className = 'dome-lightbox';
+    el.innerHTML =
+      '<div class="dome-lightbox__scrim"></div>' +
+      '<button type="button" class="dome-lightbox__close" aria-label="Close">&#10005;</button>' +
+      '<div class="dome-lightbox__stage">' +
+      '<div class="dome-lightbox__frame"><img alt=""></div>' +
+      '<div class="dome-lightbox__plaque"></div>' +
+      '</div>';
+    document.body.appendChild(el);
+
+    sharedLightbox = {
+      root: el,
+      scrim: el.querySelector('.dome-lightbox__scrim'),
+      closeBtn: el.querySelector('.dome-lightbox__close'),
+      frame: el.querySelector('.dome-lightbox__frame'),
+      img: el.querySelector('.dome-lightbox__frame img'),
+      plaque: el.querySelector('.dome-lightbox__plaque'),
+      onClose: null
+    };
+
+    function triggerClose() { if (sharedLightbox.onClose) sharedLightbox.onClose(); }
+    sharedLightbox.scrim.addEventListener('click', triggerClose);
+    sharedLightbox.closeBtn.addEventListener('click', triggerClose);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && sharedLightbox.root.classList.contains('is-open')) triggerClose();
+    });
+
+    return sharedLightbox;
+  }
+
+  /* ---------------- enlarge / close (viewport FLIP into the shared lightbox) ---------------- */
+  DomeGallery.prototype._openTile = function (tile) {
+    var lb = getLightbox();
+    if (lb.root.classList.contains('is-open') || this.focusedEl) return;
+
+    this.focusedEl = tile;
+    this._markInteraction();
+    document.body.classList.add('dg-scroll-lock');
+
+    var tileRect = tile.getBoundingClientRect();
+    var img = tile.querySelector('img');
+    tile.style.visibility = 'hidden';
+
+    lb.img.src = img.src;
+    lb.img.alt = img.alt || '';
+
+    var kicker = tile.dataset.kicker, title = tile.dataset.title, date = tile.dataset.date;
+    var hasCaption = !!(kicker || title || date);
+    lb.plaque.innerHTML =
+      (kicker ? '<p class="card__kicker">' + kicker + '</p>' : '') +
+      (title ? '<h4>' + title + '</h4>' : '') +
+      (date ? '<time>' + date + '</time>' : '');
+    lb.plaque.style.display = hasCaption ? '' : 'none';
+
+    // size the frame to a large, centered target that preserves the
+    // tile's own aspect ratio, leaving room below for the caption plaque
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var padX = Math.max(24, vw * 0.06);
+    var reserveBelow = hasCaption ? 130 : 40;
+    var maxW = Math.min(vw - padX * 2, 960);
+    var maxH = vh - 140 - reserveBelow;
+    var aspect = tileRect.width / tileRect.height;
+    var targetW = maxW, targetH = maxW / aspect;
+    if (targetH > maxH) { targetH = maxH; targetW = maxH * aspect; }
+
+    lb.frame.style.width = targetW + 'px';
+    lb.frame.style.height = targetH + 'px';
+
+    lb.root.classList.add('is-open');
+
+    var finalRect = lb.frame.getBoundingClientRect();
+    var dx = tileRect.left - finalRect.left;
+    var dy = tileRect.top - finalRect.top;
+    var sx = tileRect.width / finalRect.width;
+    var sy = tileRect.height / finalRect.height;
+
+    var self = this;
+    lb.onClose = function () { self._closeTile(tile); };
+
+    if (HAS_GSAP && !REDUCE_MOTION) {
+      gsap.set(lb.frame, { x: dx, y: dy, scaleX: sx, scaleY: sy, transformOrigin: '0 0' });
+      gsap.to(lb.frame, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.55, ease: 'power3.out' });
+      if (hasCaption) gsap.fromTo(lb.plaque, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, delay: 0.28, ease: 'power2.out' });
+    } else {
+      lb.frame.style.transform = 'none';
+      lb.plaque.style.opacity = '1';
+    }
+  };
+
+  DomeGallery.prototype._closeTile = function (tile) {
+    var lb = getLightbox();
+    var self = this;
+
+    var tileRect = tile.getBoundingClientRect();
+    var frameRect = lb.frame.getBoundingClientRect();
+    var dx = tileRect.left - frameRect.left;
+    var dy = tileRect.top - frameRect.top;
+    var sx = tileRect.width / frameRect.width;
+    var sy = tileRect.height / frameRect.height;
+
+    var finish = function () {
+      lb.root.classList.remove('is-open');
+      lb.img.src = '';
+      lb.frame.style.transform = '';
+      tile.style.visibility = '';
+      self.focusedEl = null;
+      document.body.classList.remove('dg-scroll-lock');
+    };
+
+    if (HAS_GSAP && !REDUCE_MOTION) {
+      gsap.to(lb.plaque, { opacity: 0, duration: 0.15 });
+      gsap.to(lb.frame, { x: dx, y: dy, scaleX: sx, scaleY: sy, duration: 0.4, ease: 'power2.inOut', onComplete: finish });
+    } else {
+      finish();
+    }
+  };
+
+  window.DomeGallery = DomeGallery;
+  window.readDomeImagesFrom = readImagesFrom;
+
+  /* =====================================================================
+     Auto-init: teaser dome + full immersive dome + grid/dome toggle
+     ===================================================================== */
+  document.addEventListener('DOMContentLoaded', function () {
+    var sourceSelector = '#modal-library-gallery .gallery-card';
+    var images = readImagesFrom(sourceSelector);
+    if (!images.length) return;
+
+    var instances = {};
+
+    document.querySelectorAll('[data-dome-gallery]').forEach(function (el) {
+      var opts = {
+        fit: parseFloat(el.getAttribute('data-fit')) || 0.55,
+        minRadius: parseFloat(el.getAttribute('data-min-radius')) || 460,
+        segments: parseInt(el.getAttribute('data-segments'), 10) || 20,
+        idleDelay: parseFloat(el.getAttribute('data-idle-delay')) || 2600
+      };
+      instances[el.id] = new DomeGallery(el, images, opts);
+    });
+
+    // Re-measure the full/modal dome once its <dialog> actually opens
+    // (a closed dialog has zero size, so ResizeObserver can't size it yet).
+    var trigger = document.getElementById('library-gallery-trigger');
+    var fullDome = instances['library-dome-full'];
+    if (trigger && fullDome) {
+      trigger.addEventListener('click', function () {
+        requestAnimationFrame(function () { fullDome.refresh(); });
+        setTimeout(function () { fullDome.refresh(); }, 120);
+      });
+    }
+
+    // Grid <-> Dome toggle inside the full gallery modal
+    var toggleBtns = document.querySelectorAll('.gallery-view-toggle .view-toggle-btn');
+    var grid = document.getElementById('library-grid-fallback');
+    var domeWrap = document.getElementById('library-dome-full-wrap');
+    if (toggleBtns.length && grid && domeWrap) {
+      toggleBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          toggleBtns.forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+          var view = btn.getAttribute('data-view');
+          if (view === 'dome') {
+            grid.classList.add('is-hidden');
+            domeWrap.classList.remove('is-hidden');
+            if (fullDome) requestAnimationFrame(function () { fullDome.refresh(); });
+          } else {
+            domeWrap.classList.add('is-hidden');
+            grid.classList.remove('is-hidden');
+          }
+        });
+      });
+    }
+
+    // Category filter chips ("All / Tacloban / Briefing / GACPA / Relief") —
+    // clicking one rebuilds every dome (teaser + full) with only that
+    // category's photos, and hides the rest in the grid fallback too.
+    var filterRow = document.getElementById('library-filter-row');
+    if (filterRow) {
+      var chips = Array.prototype.slice.call(filterRow.querySelectorAll('.filter-chip'));
+      var gridFigures = grid ? Array.prototype.slice.call(grid.querySelectorAll('.gallery-card')) : [];
+
+      // tag each grid figure with its category, read straight from its own kicker
+      gridFigures.forEach(function (fig) {
+        var kicker = fig.querySelector('.card__kicker');
+        fig.dataset.category = kicker ? kicker.textContent.trim().toLowerCase() : '';
+      });
+
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('is-active'); });
+          chip.classList.add('is-active');
+
+          var filter = (chip.getAttribute('data-filter') || chip.textContent.trim()).toLowerCase();
+          var matched = filter === 'all'
+            ? images
+            : images.filter(function (d) { return (d.kicker || '').trim().toLowerCase() === filter; });
+
+          var teaserDome = instances['library-dome-teaser'];
+          if (teaserDome) teaserDome.setImages(matched);
+          if (fullDome) fullDome.setImages(matched);
+
+          gridFigures.forEach(function (fig) {
+            var show = filter === 'all' || fig.dataset.category === filter;
+            fig.classList.toggle('is-hidden', !show);
+          });
+        });
+      });
+    }
+  });
+})();
 </script>
 </body>
 </html>
