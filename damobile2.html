@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Disaster Audit — Commission on Audit</title>
+<meta name="description" content="A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     TOKENS — same ledger palette/type system as the desktop site
+     ========================================================= */
+  :root{
+    --maroon-950:#170709; --maroon-900:#3D0C16; --maroon-700:#7F1425; --maroon-600:#9C1B2F; --maroon-050:#F3E1E3;
+    --gold:#A39B8B; --gold-100:#EDE8DE;
+    --paper:#F9F6F0; --paper-dim:#EFE9DC;
+    --ink:#1A1616; --ink-soft:#3D3A31; --line:#C9C0AE;
+    --font-display:"Fraunces","Iowan Old Style",Georgia,serif;
+    --font-body:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+    --radius-s:6px; --radius-m:14px; --radius-l:26px;
+    --shadow-card:0 1px 2px rgba(58,15,20,.06), 0 12px 30px -18px rgba(58,15,20,.35);
+    --shadow-lift:0 20px 45px -20px rgba(58,15,20,.45);
+    --gutter:20px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; font-family:var(--font-body); color:var(--ink); background:var(--paper);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%; display:block;}
+  a{color:inherit;}
+  h1,h2,h3,h4{font-family:var(--font-display); margin:0 0 .3em; color:var(--maroon-900); line-height:1.1;}
+  p{margin:0 0 1em;}
+  .eyebrow{
+    font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.14em;
+    font-size:.68rem; color:var(--maroon-700); font-weight:600; margin:0 0 .7em;
+  }
+  .muted{color:var(--ink-soft);}
+  :focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  .skip-link{position:absolute; left:-999px; top:0; background:var(--maroon-700); color:#fff; padding:.8em 1.2em; z-index:999; border-radius:0 0 var(--radius-s) 0;}
+  .skip-link:focus{left:0;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+    font-family:var(--font-body); font-weight:600; font-size:.88rem;
+    padding:.85em 1.3em; border-radius:999px; border:1px solid transparent;
+    text-decoration:none; cursor:pointer; transition:background .2s ease, color .2s ease, transform .2s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn--solid{background:var(--maroon-700); color:#fff; box-shadow:var(--shadow-card);}
+  .btn--solid:active{background:var(--maroon-900); transform:scale(.98);}
+  .btn--outline{color:var(--maroon-700); border-color:var(--maroon-700); background:transparent;}
+  .btn--outline:active{background:var(--maroon-700); color:#fff;}
+  .btn--block{width:100%;}
+
+  /* =========================================================
+     HEADER + MOBILE NAV (pure CSS/JS — no GSAP)
+     ========================================================= */
+  .site-header{
+    position:sticky; top:0; z-index:100;
+    background:linear-gradient(160deg, var(--maroon-950) 0%, var(--maroon-900) 60%, var(--maroon-700) 130%);
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.5em var(--gutter); font-family:var(--font-mono); font-size:.64rem;
+    letter-spacing:.06em; color:rgba(255,255,255,.65); border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .topbar__seal{color:var(--gold); margin-right:.4em;}
+
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.7em var(--gutter);
+  }
+  .brand{display:flex; align-items:center; gap:.6em; text-decoration:none;}
+  .brand img{width:34px; height:34px; border-radius:50%; object-fit:cover; background:var(--gold-100);}
+  .brand__name{font-family:var(--font-display); font-size:1.05rem; color:#fff; font-weight:600;}
+  .brand__name em{font-style:normal; color:var(--gold); display:block; font-family:var(--font-mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600;}
+
+  .hamburger{
+    width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.06); position:relative; cursor:pointer; flex:0 0 auto;
+  }
+  .hamburger span{
+    position:absolute; left:11px; right:11px; height:2px; background:#fff; border-radius:2px;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .hamburger span:nth-child(1){top:15px;}
+  .hamburger span:nth-child(2){top:20px;}
+  .hamburger span:nth-child(3){top:25px;}
+  .hamburger.open span:nth-child(1){transform:translateY(5px) rotate(45deg);}
+  .hamburger.open span:nth-child(2){opacity:0;}
+  .hamburger.open span:nth-child(3){transform:translateY(-5px) rotate(-45deg);}
+
+  .mobile-nav{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    background:var(--maroon-950); border-top:1px solid rgba(255,255,255,.08);
+  }
+  .mobile-nav.open{max-height:480px;}
+  .mobile-nav__inner{padding:.6em var(--gutter) 1.4em;}
+  .mobile-nav a{
+    display:block; padding:.85em 0; color:#fff; text-decoration:none; font-weight:600;
+    font-size:.95rem; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .mobile-nav a span{display:block; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); margin-top:.15em; font-weight:600;}
+  .mobile-nav .btn{margin-top:1em;}
+
+  /* =========================================================
+     HERO
+     ========================================================= */
+  .hero{
+    background:linear-gradient(175deg, var(--maroon-950) 0%, var(--maroon-900) 55%, var(--maroon-700) 140%);
+    color:#fff; padding:1.8em var(--gutter) 2.4em; position:relative; overflow:hidden;
+  }
+  /* ambient gradient wash standing in for the WebGL grainient background —
+     same warm maroon glow, done with layered radial-gradients + a slow CSS
+     keyframe drift instead of a shader */
+  .hero::before{
+    content:""; position:absolute; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 20% 15%, rgba(163,155,139,.20), transparent 60%),
+      radial-gradient(55% 45% at 85% 80%, rgba(127,20,37,.55), transparent 65%);
+    animation:hero-drift 16s ease-in-out infinite alternate;
+  }
+  @keyframes hero-drift{
+    from{ transform:translate(-2%, -1%) scale(1); }
+    to{ transform:translate(2%, 2%) scale(1.06); }
+  }
+  .hero__inner{position:relative; z-index:1;}
+  .hero .eyebrow{color:var(--gold);}
+  .hero__title{font-size:clamp(1.7rem, 7vw, 2.1rem); color:#fff;}
+  .hero__title em{color:var(--gold); font-style:italic;}
+  .hero__lede{color:rgba(249,246,240,.8); font-size:.95rem; max-width:46ch;}
+
+  .hero__search{
+    display:flex; align-items:center; gap:.5em; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:.3em .3em .3em 1.1em; margin:1.2em 0;
+  }
+  .hero__search input{
+    flex:1; background:none; border:none; color:#fff; font-family:var(--font-body); font-size:.85rem; padding:.6em 0;
+  }
+  .hero__search input::placeholder{color:rgba(255,255,255,.5);}
+  .hero__search button{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--gold);
+    color:var(--maroon-950); font-size:1rem; cursor:pointer; flex:0 0 auto;
+  }
+
+  .hero__stats{display:flex; gap:1.4em; margin:1.4em 0 1.8em; flex-wrap:wrap;}
+  .hero__stats div strong{display:block; font-family:var(--font-mono); font-size:1.3rem; color:var(--gold);}
+  .hero__stats div span{font-size:.72rem; color:rgba(249,246,240,.65);}
+
+  /* live ledger card — a plain looping CSS list standing in for the
+     GSAP CardSwap 3D stack: same content, a much simpler mobile-friendly
+     motion (one row fades/slides in at a time) */
+  .ledger-card{
+    background:var(--maroon-700); border-radius:var(--radius-l); padding:1.3em;
+    box-shadow:var(--shadow-lift); border:1px solid rgba(255,255,255,.08);
+  }
+  .ledger-card__head{display:flex; align-items:center; gap:.5em; font-family:var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--gold-100); margin-bottom:.9em;}
+  .ledger-card__dot{width:7px; height:7px; border-radius:50%; background:#8FD19E; box-shadow:0 0 0 3px rgba(143,209,158,.25); animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.4;}}
+  .ledger-feed{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.7em;}
+  .ledger-feed li{
+    background:rgba(0,0,0,.14); border-radius:var(--radius-s); padding:.7em .8em;
+    animation:feed-in .5s ease both;
+  }
+  .ledger-feed li:nth-child(2){animation-delay:.1s;}
+  .ledger-feed li:nth-child(3){animation-delay:.2s;}
+  @keyframes feed-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .ledger-feed .row{display:flex; justify-content:space-between; align-items:baseline; gap:.6em;}
+  .ledger-feed .amount{font-family:var(--font-mono); font-weight:700; font-size:.78rem; color:#fff;}
+  .ledger-feed .loc{font-size:.76rem; color:rgba(255,255,255,.85);}
+  .ledger-feed time{font-family:var(--font-mono); font-size:.66rem; color:rgba(255,255,255,.5);}
+
+  /* =========================================================
+     SHARED SECTION LAYOUT
+     ========================================================= */
+  .section{padding:2.4em var(--gutter);}
+  .section--tinted{background:var(--paper-dim);}
+  .section__head{margin-bottom:1.2em;}
+  .section__lede{color:var(--ink-soft); font-size:.92rem; max-width:52ch;}
+
+  .filter-row{display:flex; gap:.5em; overflow-x:auto; padding-bottom:.3em; margin-bottom:1.2em; -webkit-overflow-scrolling:touch;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{
+    flex:0 0 auto; font-family:var(--font-mono); font-size:.7rem; letter-spacing:.04em; text-transform:uppercase;
+    padding:.6em 1.05em; border-radius:999px; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink-soft); cursor:pointer; white-space:nowrap; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .filter-chip.is-active{background:var(--maroon-700); border-color:var(--maroon-700); color:#fff;}
+
+  /* library "Filter" button — opens the place/event panel */
+  .filter-btn{
+    display:flex; align-items:center; gap:.6em; width:100%; margin-bottom:1.2em;
+    background:#fff; border:1px solid var(--line); border-radius:999px; padding:.8em 1.1em;
+    font-family:var(--font-body); font-size:.85rem; font-weight:600; color:var(--ink);
+    cursor:pointer; text-align:left;
+  }
+  .filter-btn svg{flex:0 0 auto; color:var(--maroon-700);}
+  .filter-btn span:first-of-type{flex:1;}
+  .filter-btn__count{
+    flex:0 0 auto; min-width:20px; height:20px; padding:0 .4em; border-radius:999px;
+    background:var(--maroon-700); color:#fff; font-family:var(--font-mono); font-size:.68rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* place/event filter panel contents */
+  .filter-group{margin-bottom:1.4em;}
+  .filter-group:last-child{margin-bottom:0;}
+  .filter-group h4{
+    font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--ink-soft); margin-bottom:.7em;
+  }
+  .filter-pills{display:flex; flex-wrap:wrap; gap:.5em;}
+  .filter-pills .pill{
+    font-family:var(--font-body); font-size:.82rem; font-weight:600; color:var(--ink-soft);
+    background:var(--paper-dim); border:1px solid transparent; border-radius:999px;
+    padding:.6em 1.1em; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .filter-pills .pill.is-active{background:var(--maroon-700); color:#fff;}
+  .modal-panel__actions{display:flex; gap:.7em; padding-top:1.2em; margin-top:.4em; border-top:1px solid var(--line);}
+  .modal-panel__actions .btn{flex:1;}
+
+  .card-grid{display:flex; flex-direction:column; gap:1em;}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-m);
+    box-shadow:var(--shadow-card); overflow:hidden;
+  }
+  .card__media{position:relative; aspect-ratio:16/9; background:var(--paper-dim); overflow:hidden;}
+  .card__media img{width:100%; height:100%; object-fit:cover; display:block;}
+  .card__stamp{
+    position:absolute; right:14px; bottom:-22px; z-index:2;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--paper); border:1.5px dashed var(--maroon-600);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.56rem; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--maroon-700);
+    transform:rotate(-14deg); box-shadow:0 4px 10px -4px rgba(58,15,20,.35);
+  }
+  .card__body{padding:1.6em 1.2em 1.2em;}
+  .card__kicker{font-family:var(--font-mono); font-size:.64rem; text-transform:uppercase; letter-spacing:.1em; color:var(--maroon-700); font-weight:700; margin-bottom:.4em;}
+  .card h3{font-size:1.05rem; margin-bottom:.3em;}
+  .card p{font-size:.85rem; color:var(--ink-soft); margin-bottom:.9em;}
+  .card__meta{display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft);}
+  .card__meta strong{color:var(--maroon-700);}
+  .see-more{margin-top:1.2em;}
+
+  /* articles & briefings — modern editorial cards: gradient thumb with
+     a floating tag pill, hover lift, and a stretched-link "Read more" */
+  .news-grid{display:flex; flex-direction:column; gap:1.1em;}
+  .news-card{
+    position:relative; display:flex; flex-direction:column;
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-m);
+    overflow:hidden; box-shadow:var(--shadow-card);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .news-card:hover, .news-card:focus-within{
+    transform:translateY(-4px); box-shadow:var(--shadow-lift); border-color:var(--maroon-700);
+  }
+  .news-card__thumb{
+    position:relative; aspect-ratio:16/9; overflow:hidden;
+    display:flex; align-items:flex-end; padding:.9em;
+    background:linear-gradient(135deg, var(--maroon-900) 0%, var(--maroon-700) 55%, var(--gold) 150%);
+  }
+  .news-card__thumb::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 12% 0%, rgba(255,255,255,.22), transparent 55%);
+    mix-blend-mode:overlay; pointer-events:none;
+  }
+  .news-card__tag{
+    position:relative; z-index:1; font-family:var(--font-mono); font-size:.62rem;
+    text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:#fff;
+    background:rgba(23,7,9,.4); border:1px solid rgba(255,255,255,.35);
+    padding:.35em .75em; border-radius:999px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  }
+  .news-card__body{padding:1.1em 1.2em 1.2em; display:flex; flex-direction:column; flex:1;}
+  .news-card__body h3{font-size:1rem; margin-bottom:.35em;}
+  .news-card__body p{font-size:.85rem; color:var(--ink-soft); margin-bottom:1em; flex:1;}
+  .news-card__meta{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft);
+    border-top:1px solid var(--paper-dim); padding-top:.8em;
+  }
+  .news-card__cta{
+    position:relative; display:inline-flex; align-items:center; gap:.3em;
+    font-family:var(--font-body); font-weight:600; font-size:.8rem; color:var(--maroon-700);
+    text-decoration:none; transition:gap .2s ease;
+  }
+  .news-card__cta::after{content:""; position:absolute; inset:0;}
+  .news-card:hover .news-card__cta{gap:.5em;}
+  @media (min-width:600px){ .news-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.2em;} }
+
+  /* =========================================================
+     FLOATING "MORE REPORTS" PANEL — bottom-sheet modal, pure CSS
+     transitions (transform/opacity), no dependencies
+     ========================================================= */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:flex-end; justify-content:center;
+    background:rgba(23,7,9,.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .3s ease, visibility 0s linear .3s;
+  }
+  .modal-overlay.is-open{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity .3s ease, visibility 0s linear 0s;
+  }
+
+  .modal-panel{
+    width:100%; max-width:520px; max-height:86vh; overflow-y:auto;
+    background:var(--paper); border-radius:24px 24px 0 0;
+    box-shadow:0 -20px 60px -20px rgba(23,7,9,.5);
+    padding:.6em var(--gutter) 2em;
+    transform:translateY(100%); transition:transform .38s cubic-bezier(.22,.9,.32,1);
+  }
+  .modal-overlay.is-open .modal-panel{transform:translateY(0);}
+
+  .modal-panel__handle{width:40px; height:4px; border-radius:999px; background:var(--line); margin:.7em auto 1em;}
+  .modal-panel__head{display:flex; align-items:center; justify-content:space-between; margin-bottom:1.1em;}
+  .modal-panel__head h3{margin:0; font-size:1.15rem;}
+  .modal-panel__close{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:#fff;
+    color:var(--ink-soft); font-size:.85rem; cursor:pointer; flex:0 0 auto;
+  }
+  .modal-panel__body{display:flex; flex-direction:column; gap:1em;}
+
+  /* modernized report card — used inside the floating panel */
+  .modern-card{
+    position:relative; background:#fff; border-radius:var(--radius-l);
+    box-shadow:0 1px 2px rgba(58,15,20,.05), 0 16px 32px -20px rgba(58,15,20,.35);
+    border:1px solid rgba(201,192,174,.5); overflow:hidden;
+    opacity:0; transform:translateY(10px); animation:modern-card-in .45s ease forwards;
+  }
+  @keyframes modern-card-in{ to{ opacity:1; transform:translateY(0); } }
+  .modal-panel__body .modern-card:nth-child(1){animation-delay:.05s;}
+  .modal-panel__body .modern-card:nth-child(2){animation-delay:.12s;}
+  .modal-panel__body .modern-card:nth-child(3){animation-delay:.19s;}
+  .modal-panel__body .modern-card:nth-child(4){animation-delay:.26s;}
+  .modal-panel__body .modern-card:nth-child(5){animation-delay:.33s;}
+  .modal-panel__body .modern-card:nth-child(6){animation-delay:.4s;}
+
+  .modern-card__media{position:relative; aspect-ratio:16/9; background:var(--paper-dim); overflow:hidden;}
+  .modern-card__media img{width:100%; height:100%; object-fit:cover; display:block;}
+  .modern-card__stamp{
+    position:absolute; right:14px; bottom:-22px; z-index:2;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--paper); border:1.5px dashed var(--maroon-600);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.56rem; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--maroon-700);
+    transform:rotate(-14deg); box-shadow:0 4px 10px -4px rgba(58,15,20,.35);
+  }
+  .modern-card__body{padding:1.6em 1.3em 1.1em;}
+
+  .modern-card__top{display:flex; align-items:center; margin-bottom:.9em;}
+  .modern-card__tag{
+    font-family:var(--font-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--maroon-700); font-weight:700; background:var(--maroon-050);
+    padding:.35em .7em; border-radius:999px;
+  }
+  .modern-card h4{font-size:1rem; margin-bottom:.35em;}
+  .modern-card p{font-size:.85rem; color:var(--ink-soft); margin-bottom:1em;}
+
+  .modern-card__progress{display:flex; align-items:center; gap:.7em; margin-bottom:1em;}
+  .modern-card__progress-track{flex:1; height:6px; border-radius:999px; background:var(--paper-dim); overflow:hidden;}
+  .modern-card__progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg, var(--maroon-700), var(--maroon-600));}
+  .modern-card__progress span{font-family:var(--font-mono); font-size:.7rem; color:var(--maroon-700); font-weight:700; white-space:nowrap;}
+  .modern-card__progress span em{font-style:normal; color:var(--ink-soft); font-weight:600;}
+
+  .modern-card__foot{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--paper-dim); padding-top:.8em;}
+  .modern-card__foot span{font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .modern-card__foot a{font-size:.8rem; font-weight:600; color:var(--maroon-700); text-decoration:none;}
+
+  /* documentation card — same modern-card shell, with a photo thumbnail
+     up top instead of a progress bar */
+  .doc-card__thumb{
+    aspect-ratio:16/9; border-radius:var(--radius-m); margin-bottom:.9em;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.66rem; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); padding:1em;
+  }
+  .doc-card .modern-card__top{margin-bottom:.6em;}
+
+  body.modal-open{overflow:hidden;}
+
+  /* =========================================================
+     CHAT SUPPORT WIDGET — floating launcher + slide-up panel,
+     matching the "DisasterAudit Support" reference mockup
+     ========================================================= */
+  .chat-launcher{
+    position:fixed; right:1.1em; bottom:1.1em; z-index:220;
+    width:56px; height:56px; border-radius:50%; border:none;
+    background:var(--maroon-700); color:#fff; box-shadow:0 14px 30px -10px rgba(23,7,9,.5);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .chat-launcher:active{transform:scale(.94);}
+  .chat-launcher.is-open{background:var(--maroon-900);}
+
+  .chat-panel{
+    position:fixed; right:1.1em; bottom:5.2em; z-index:219;
+    width:min(88vw, 340px); max-height:70vh;
+    background:var(--paper); border-radius:var(--radius-l);
+    box-shadow:0 30px 60px -20px rgba(23,7,9,.5);
+    display:flex; flex-direction:column; overflow:hidden;
+    transform-origin:bottom right;
+    opacity:0; visibility:hidden; transform:scale(.9) translateY(10px);
+    transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
+  }
+  .chat-panel.is-open{
+    opacity:1; visibility:visible; transform:scale(1) translateY(0);
+    transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s;
+  }
+
+  .chat-panel__head{
+    display:flex; align-items:center; gap:.7em; padding:1em 1.1em;
+    background:linear-gradient(160deg, var(--maroon-950), var(--maroon-700));
+  }
+  .chat-panel__avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--gold-100); flex:0 0 auto;
+  }
+  .chat-panel__title{flex:1; min-width:0;}
+  .chat-panel__title strong{display:block; color:#fff; font-family:var(--font-display); font-size:.95rem;}
+  .chat-panel__title span{
+    display:flex; align-items:center; gap:.35em; font-size:.68rem; color:rgba(249,246,240,.7);
+  }
+  .chat-panel__title span i{width:6px; height:6px; border-radius:50%; background:#8FD19E; display:inline-block;}
+  .chat-panel__close{
+    width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,.12);
+    color:#fff; font-size:.75rem; cursor:pointer; flex:0 0 auto;
+  }
+
+  .chat-panel__body{flex:1; overflow-y:auto; padding:1em 1.1em; display:flex; flex-direction:column; gap:.8em;}
+  .chat-msg{max-width:88%;}
+  .chat-msg p{
+    margin:0; font-size:.82rem; line-height:1.4; padding:.7em .9em; border-radius:var(--radius-m);
+  }
+  .chat-msg time{display:block; font-family:var(--font-mono); font-size:.6rem; color:var(--ink-soft); margin-top:.3em;}
+  .chat-msg--bot{align-self:flex-start;}
+  .chat-msg--bot p{background:#fff; border:1px solid var(--line); color:var(--ink); border-bottom-left-radius:4px;}
+  .chat-msg--user{align-self:flex-end;}
+  .chat-msg--user p{background:var(--maroon-700); color:#fff; border-bottom-right-radius:4px;}
+  .chat-msg--user time{text-align:right;}
+  .chat-msg__actions{display:flex; gap:.5em; margin-top:.5em; flex-wrap:wrap;}
+  .chat-quick-btn{
+    font-size:.74rem; font-weight:600; color:var(--maroon-700); text-decoration:none;
+    border:1px solid var(--maroon-700); border-radius:999px; padding:.5em 1em;
+  }
+
+  .chat-panel__composer{
+    display:flex; align-items:center; gap:.5em; padding:.7em .8em;
+    border-top:1px solid var(--line); background:var(--paper);
+  }
+  .chat-panel__composer input{
+    flex:1; border:none; background:var(--paper-dim); border-radius:999px; padding:.7em 1em;
+    font-family:var(--font-body); font-size:.82rem; color:var(--ink);
+  }
+  .chat-panel__composer input:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .chat-panel__composer button{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--maroon-700); color:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .chat-panel{transition:none !important;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .modal-overlay, .modal-panel, .modern-card{animation:none !important; transition:none !important;}
+  }
+
+  /* library — simple horizontal scroll strip, mobile-first replacement
+     for the WebGL dome sphere */
+  .photo-strip{display:flex; gap:.7em; overflow-x:auto; padding-bottom:.4em; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory;}
+  .photo-strip::-webkit-scrollbar{display:none;}
+  .photo-strip figure{
+    flex:0 0 76%; margin:0; scroll-snap-align:start; border-radius:var(--radius-m); overflow:hidden;
+    box-shadow:var(--shadow-card); border:1px solid var(--line); background:var(--paper-dim); aspect-ratio:4/3;
+    position:relative;
+  }
+  .photo-strip figure .ph{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    color:var(--ink-soft); font-family:var(--font-mono); font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:1em;
+  }
+  .photo-strip figcaption{
+    position:absolute; left:0; right:0; bottom:0; padding:.6em .8em;
+    background:linear-gradient(to top, rgba(23,7,9,.75), transparent);
+    color:#fff; font-size:.72rem; font-family:var(--font-mono);
+  }
+
+  /* risk map — dark hero-matching panel with a donut breakdown by risk
+     tier (no named regions, just the aggregate exposure picture) */
+  .section--risk{
+    background:linear-gradient(175deg, var(--maroon-950) 0%, var(--maroon-900) 55%, var(--maroon-700) 140%);
+    color:#fff; position:relative; overflow:hidden;
+  }
+  .section--risk::before{
+    content:""; position:absolute; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 80% 12%, rgba(163,155,139,.20), transparent 60%),
+      radial-gradient(55% 45% at 12% 88%, rgba(127,20,37,.55), transparent 65%);
+    animation:hero-drift 18s ease-in-out infinite alternate;
+  }
+  .section--risk .section__head, .section--risk .risk-panel{position:relative; z-index:1;}
+  .section--risk .eyebrow{color:var(--gold);}
+  .section--risk h2{color:#fff;}
+  .section--risk .section__lede{color:rgba(249,246,240,.75);}
+
+  .risk-panel{
+    display:flex; flex-wrap:wrap; align-items:center; gap:1.8em;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    border-radius:var(--radius-l); padding:1.6em;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    box-shadow:var(--shadow-lift);
+  }
+  .risk-video{
+    flex:1 1 320px; min-width:260px; max-width:460px;
+    aspect-ratio:16/9; width:100%; border-radius:var(--radius-m);
+    overflow:hidden; background:var(--maroon-950);
+    border:1px solid rgba(255,255,255,.16); box-shadow:var(--shadow-card);
+  }
+  .risk-video video{width:100%; height:100%; object-fit:cover; display:block;}
+  .risk-panel__text{flex:1 1 240px; min-width:220px;}
+  .risk-panel__text h3{
+    color:#fff; font-size:clamp(1.05rem, 2vw + .6rem, 1.3rem); margin:0 0 .4em;
+  }
+  .risk-panel__text p{color:rgba(249,246,240,.75); font-size:.9rem; margin:0;}
+
+  /* FAQ — native <details>, no JS needed */
+  .faq-list{display:flex; flex-direction:column; gap:.7em;}
+  .faq-list details{
+    background:var(--paper-dim); border:none; border-radius:var(--radius-m); padding:.3em 1.1em;
+    transition:background .25s ease;
+  }
+  .faq-list summary{
+    padding:1em 0; font-weight:700; font-size:.92rem; cursor:pointer; list-style:none;
+    display:flex; justify-content:space-between; align-items:center; gap:1em; line-height:1.35;
+  }
+  .faq-list summary::-webkit-details-marker{display:none;}
+  .faq-list summary::after{
+    content:"+"; flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff; color:var(--maroon-700); font-family:var(--font-mono); font-size:1rem; font-weight:700;
+    transition:background .2s ease, color .2s ease;
+  }
+  .faq-list details[open]{background:var(--maroon-700); color:#fff;}
+  .faq-list details[open] summary::after{content:"–"; background:rgba(255,255,255,.16); color:#fff;}
+  .faq-list p{font-size:.85rem; color:var(--ink-soft); padding-bottom:1em; margin:0;}
+  .faq-list details[open] p{color:rgba(249,246,240,.85);}
+
+  /* =========================================================
+     FOOTER
+     ========================================================= */
+  .site-footer{background:var(--maroon-950); color:rgba(249,246,240,.75); padding:2.2em var(--gutter) 1.4em;}
+  .footer-brand__mark{display:flex; align-items:center; gap:.7em; text-decoration:none; margin-bottom:.9em;}
+  .footer-brand__mark img{width:40px; height:40px; border-radius:50%; object-fit:cover; background:var(--gold-100);}
+  .footer-brand__name strong{display:block; font-family:var(--font-display); font-size:1.1rem; color:#fff;}
+  .footer-brand__name em{font-style:normal; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold);}
+  .site-footer p{font-size:.85rem;}
+  .footer-seal{display:inline-block; font-family:var(--font-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); border-top:1px solid rgba(255,255,255,.15); padding-top:.9em; margin-top:.4em;}
+
+  .footer-cols{display:flex; flex-direction:column; gap:1.6em; margin:1.8em 0;}
+  .footer-col h4{font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); margin-bottom:.8em;}
+  .footer-col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.6em;}
+  .footer-col a{text-decoration:none; font-size:.87rem; color:rgba(249,246,240,.8);}
+  .footer-col address{font-style:normal; font-size:.85rem;}
+  .footer-col address p{margin:0 0 .6em;}
+
+  .footer-meta{border-top:1px solid rgba(255,255,255,.12); padding-top:1.2em; font-size:.76rem; display:flex; flex-direction:column; gap:.9em;}
+  .footer-legal{display:flex; flex-wrap:wrap; gap:.5em 1em;}
+  .footer-legal a{text-decoration:none; color:rgba(249,246,240,.6);}
+  .footer-language-selector select{
+    background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.2);
+    border-radius:999px; padding:.5em 1em; font-family:var(--font-body); font-size:.8rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hero::before{animation:none;}
+    .ledger-card__dot{animation:none;}
+    .ledger-feed li{animation:none;}
+  }
+
+  /* widen up gracefully — still a mobile-first layout, just breathes a
+     little more on larger phones/small tablets */
+  @media (min-width:480px){
+    :root{--gutter:28px;}
+    .card-grid{display:grid; grid-template-columns:1fr 1fr; gap:1em;}
+  }
+
+  /* reports — a plain stacked list, one full-width card per row */
+  #reports-grid{display:flex; flex-direction:column; gap:1em;}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="topbar">
+    <span><span class="topbar__seal">★</span>Republic of the Philippines</span>
+    <span>gov.ph</span>
+  </div>
+  <div class="navbar">
+    <a class="brand" href="#home">
+      <img src="images/logo.png" alt="Commission on Audit logo">
+      <span class="brand__name">Disaster Audit<em>Commission on Audit</em></span>
+    </a>
+    <button class="hamburger" id="navToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-hidden="true">
+    <div class="mobile-nav__inner">
+      <a href="#reports">Reports<span>Where the money went</span></a>
+      <a href="#library">Documentation library<span>Photos &amp; source records</span></a>
+      <a href="#map">Risk map<span>Exposure by region</span></a>
+      <a href="#news">Articles &amp; briefings<span>Latest findings</span></a>
+      <a href="#faq">FAQs<span>How to read the ledger</span></a>
+      <a class="btn btn--solid btn--block" href="#reports">Search the ledger</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero__inner">
+    <p class="eyebrow">Calamity fund tracker</p>
+    <h1 class="hero__title">Every peso, from the <em>national treasury</em> to the barangay.</h1>
+    <p class="hero__lede">A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending down to the last liquidation report.</p>
+
+    <div class="hero__search">
+      <input id="search" type="text" placeholder="Search tracking numbers, allocations…">
+      <button aria-label="Search">→</button>
+    </div>
+
+    <div class="hero__stats">
+      <div><strong>₱18.4B</strong><span>Tracked this year</span></div>
+      <div><strong>1,342</strong><span>Liquidation reports</span></div>
+      <div><strong>82</strong><span>Provinces covered</span></div>
+    </div>
+
+    <div class="ledger-card">
+      <div class="ledger-card__head"><span class="ledger-card__dot"></span> Live allocation monitor · simulated data</div>
+      <ul class="ledger-feed">
+        <li><div class="row"><span class="loc">Region VIII · Typhoon relief</span><span class="amount">₱4.2M</span></div><time>2 min ago</time></li>
+        <li><div class="row"><span class="loc">Region V · Evacuation centers</span><span class="amount">₱1.8M</span></div><time>11 min ago</time></li>
+        <li><div class="row"><span class="loc">BARMM · Flood response</span><span class="amount">₱6.6M</span></div><time>24 min ago</time></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<main id="main">
+
+  <section class="section" id="reports">
+    <div class="section__head">
+      <p class="eyebrow">Reports</p>
+      <h2>Where the money went</h2>
+      <p class="section__lede">Audit findings and fund utilization reports, filterable by disaster type.</p>
+    </div>
+
+    <div class="filter-row" id="reports-filter-row">
+      <button class="filter-chip is-active" data-filter="all">All reports</button>
+      <button class="filter-chip" data-filter="typhoon">Typhoon</button>
+      <button class="filter-chip" data-filter="earthquake">Earthquake</button>
+      <button class="filter-chip" data-filter="flood">Flood</button>
+    </div>
+
+    <div class="card-grid" id="reports-grid">
+      <article class="card" data-category="typhoon">
+        <div class="card__media">
+          <img src="https://picsum.photos/seed/typhoon-odette/600/338" alt="Relief goods being distributed after Typhoon Odette" loading="lazy">
+          <span class="card__stamp">Filed</span>
+        </div>
+        <div class="card__body">
+          <p class="card__kicker">Audit finding</p>
+          <h3>Typhoon Odette relief disbursement</h3>
+          <p>Utilization review of quick-response funds released to Region VIII local government units.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:96%"></div></div>
+            <span>96% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region VIII</span><a href="#">View report →</a></div>
+        </div>
+      </article>
+      <article class="card" data-category="earthquake">
+        <div class="card__media">
+          <img src="https://picsum.photos/seed/abra-earthquake/600/338" alt="Temporary shelter units after the Abra earthquake" loading="lazy">
+          <span class="card__stamp">Filed</span>
+        </div>
+        <div class="card__body">
+          <p class="card__kicker">Audit finding</p>
+          <h3>Abra earthquake shelter assistance</h3>
+          <p>Review of emergency shelter assistance payouts following the 2022 Abra earthquake.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:88%"></div></div>
+            <span>88% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>CAR</span><a href="#">View report →</a></div>
+        </div>
+      </article>
+    </div>
+
+    <button class="btn btn--outline btn--block see-more" id="reports-see-more" type="button" aria-haspopup="dialog" aria-controls="reports-modal">See more reports</button>
+  </section>
+
+  <!-- Floating "more reports" panel — opens over the page, modernized card style -->
+  <div class="modal-overlay" id="reports-modal-overlay">
+    <div class="modal-panel" id="reports-modal" role="dialog" aria-modal="true" aria-labelledby="reports-modal-title">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="reports-modal-title">More reports</h3>
+        <button class="modal-panel__close" id="reports-modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-panel__body">
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/marikina-flood/600/338" alt="Flooded riverside relief distribution in Marikina" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Flood</span>
+            </div>
+            <h4>Marikina River flood relief</h4>
+            <p>Relief good distribution and cash assistance following sustained monsoon flooding.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:91%"></div></div>
+              <span>91% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>NCR</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="earthquake">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/davao-earthquake/600/338" alt="Temporary medical assistance tent in Davao del Sur" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Earthquake</span>
+            </div>
+            <h4>Davao del Sur earthquake response</h4>
+            <p>Quick-response fund releases for temporary shelter and medical assistance.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:80%"></div></div>
+              <span>80% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region XI</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="typhoon">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/kristine-farm/600/338" alt="Farm input handover after Typhoon Kristine" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Typhoon</span>
+            </div>
+            <h4>Typhoon Kristine agricultural aid</h4>
+            <p>Cash-for-work and farm input assistance across flood-hit municipalities.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:67%"></div></div>
+              <span>67% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region V</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/pampanga-dredging/600/338" alt="Dredging works along the Pampanga river basin" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Flood</span>
+            </div>
+            <h4>Pampanga River basin dredging fund</h4>
+            <p>Utilization review of dredging and dike repair allocations.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:58%"></div></div>
+              <span>58% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region III</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/cagayan-flood/600/338" alt="Flood control infrastructure in Cagayan Valley" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Flood</span>
+            </div>
+            <h4>Cagayan Valley flood control funds</h4>
+            <p>Tracing calamity fund releases for flood mitigation infrastructure and relief goods.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:74%"></div></div>
+              <span>74% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region II</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="earthquake">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/batangas-evacuation/600/338" alt="Evacuation center for Batangas volcanic activity" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Earthquake</span>
+            </div>
+            <h4>Batangas volcanic evacuation aid</h4>
+            <p>Utilization review of evacuation and relief assistance for displaced households.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:83%"></div></div>
+              <span>83% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region IV-A</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <section class="section section--tinted" id="library">
+    <div class="section__head">
+      <p class="eyebrow">Documentation library</p>
+      <h2>Source photos &amp; field records</h2>
+      <p class="section__lede">Swipe through field documentation submitted alongside liquidation reports.</p>
+    </div>
+
+    <button class="filter-btn" id="libraryFilterBtn" type="button" aria-haspopup="dialog" aria-controls="libraryFilterPanel">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <span id="libraryFilterLabel">Filter by place or event</span>
+      <span class="filter-btn__count" id="libraryFilterCount" hidden>0</span>
+    </button>
+
+    <div class="photo-strip" id="library-strip">
+      <figure data-category="typhoon" data-region="Region VIII"><div class="ph">Relief goods packing<br>Tacloban warehouse</div><figcaption>Region VIII · Jan 2026</figcaption></figure>
+      <figure data-category="earthquake" data-region="CAR"><div class="ph">Temporary shelter site<br>Bangued</div><figcaption>CAR · Nov 2025</figcaption></figure>
+      <figure data-category="flood" data-region="Region II"><div class="ph">Evacuation center<br>Tuguegarao</div><figcaption>Region II · Oct 2025</figcaption></figure>
+      <figure data-category="typhoon" data-region="Region V"><div class="ph">Barangay disbursement<br>ledger sign-off</div><figcaption>Region V · Sep 2025</figcaption></figure>
+    </div>
+
+    <button class="btn btn--outline btn--block see-more" id="library-see-more" type="button" aria-haspopup="dialog" aria-controls="library-modal">See more documentation</button>
+  </section>
+
+  <!-- Filter panel — choose a place (region) and/or an event (disaster
+       type) to narrow the documentation strip -->
+  <div class="modal-overlay" id="library-filter-overlay">
+    <div class="modal-panel" id="libraryFilterPanel" role="dialog" aria-modal="true" aria-labelledby="libraryFilterTitle">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="libraryFilterTitle">Filter documentation</h3>
+        <button class="modal-panel__close" id="libraryFilterClose" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-panel__body">
+        <div class="filter-group">
+          <h4>Event</h4>
+          <div class="filter-pills" data-filter-type="category">
+            <button class="pill" data-value="typhoon">Typhoon</button>
+            <button class="pill" data-value="earthquake">Earthquake</button>
+            <button class="pill" data-value="flood">Flood</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <h4>Place</h4>
+          <div class="filter-pills" data-filter-type="region">
+            <button class="pill" data-value="Region VIII">Region VIII</button>
+            <button class="pill" data-value="CAR">CAR</button>
+            <button class="pill" data-value="Region II">Region II</button>
+            <button class="pill" data-value="Region V">Region V</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-panel__actions">
+        <button class="btn btn--outline" id="libraryFilterClear" type="button">Clear</button>
+        <button class="btn btn--solid" id="libraryFilterApply" type="button">Apply filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating "more documentation" panel — same floating pattern as the reports one -->
+  <div class="modal-overlay" id="library-modal-overlay">
+    <div class="modal-panel" id="library-modal" role="dialog" aria-modal="true" aria-labelledby="library-modal-title">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="library-modal-title">More documentation</h3>
+        <button class="modal-panel__close" id="library-modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-panel__body">
+        <button class="filter-btn" id="libraryModalFilterBtn" type="button" aria-haspopup="dialog" aria-controls="libraryFilterPanel">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          <span id="libraryModalFilterLabel">Filter by place or event</span>
+          <span class="filter-btn__count" id="libraryModalFilterCount" hidden>0</span>
+        </button>
+
+        <article class="modern-card doc-card" data-category="flood" data-region="Region VIII">
+          <div class="doc-card__thumb">Relief distribution site<br>Ormoc</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Flood</span></div>
+          <h4>Relief distribution site — Ormoc</h4>
+          <p>Field documentation submitted alongside the Region VIII quarterly liquidation report.</p>
+          <div class="modern-card__foot"><span>Region VIII</span><a href="#">View →</a></div>
+        </article>
+
+        <article class="modern-card doc-card" data-category="earthquake" data-region="CAR">
+          <div class="doc-card__thumb">Temporary housing units<br>La Trinidad</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Earthquake</span></div>
+          <h4>Temporary housing units — La Trinidad</h4>
+          <p>Site inspection photos submitted with the shelter assistance liquidation report.</p>
+          <div class="modern-card__foot"><span>CAR</span><a href="#">View →</a></div>
+        </article>
+
+        <article class="modern-card doc-card" data-category="flood" data-region="Region III">
+          <div class="doc-card__thumb">Dike repair progress<br>San Mateo</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Flood</span></div>
+          <h4>Dike repair progress — San Mateo</h4>
+          <p>Progress photos attached to the flood control infrastructure fund report.</p>
+          <div class="modern-card__foot"><span>Region III</span><a href="#">View →</a></div>
+        </article>
+
+        <article class="modern-card doc-card" data-category="typhoon" data-region="Region V">
+          <div class="doc-card__thumb">Farm input handover<br>Daraga</div>
+          <div class="modern-card__top"><span class="modern-card__tag">Typhoon</span></div>
+          <h4>Farm input handover — Daraga</h4>
+          <p>Distribution records submitted with the agricultural aid liquidation report.</p>
+          <div class="modern-card__foot"><span>Region V</span><a href="#">View →</a></div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <section class="section section--risk" id="map">
+    <div class="section__head">
+      <p class="eyebrow">Risk map</p>
+      <h2>Exposure by region</h2>
+      <p class="section__lede">Aggregate risk tier across regions currently under active calamity fund monitoring.</p>
+    </div>
+    <div class="risk-panel">
+      <div class="risk-video">
+        <video controls playsinline poster="images/risk-video-poster.jpg">
+          <source src="videos/disaster-risk-audit.mp4" type="video/mp4">
+          Your browser doesn't support embedded video.
+        </video>
+      </div>
+      <div class="risk-panel__text">
+        <h3>From disaster risk to audit trail</h3>
+        <p>A short briefing on how calamity fund exposure is tracked across at-risk regions, and how that risk picture shapes what COA chooses to audit next.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tinted" id="news">
+    <div class="section__head">
+      <p class="eyebrow">Articles &amp; briefings</p>
+      <h2>Latest findings</h2>
+    </div>
+    <div class="news-grid">
+      <article class="news-card">
+        <div class="news-card__thumb"><span class="news-card__tag">Briefing</span></div>
+        <div class="news-card__body">
+          <h3>COA flags delayed liquidation in three provinces</h3>
+          <p>A summary of the latest quarterly compliance briefing on calamity fund reporting.</p>
+          <div class="news-card__meta">
+            <span>Aug 2026</span>
+            <a class="news-card__cta" href="#">Read more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+      <article class="news-card">
+        <div class="news-card__thumb"><span class="news-card__tag">Explainer</span></div>
+        <div class="news-card__body">
+          <h3>How a calamity fund release is audited</h3>
+          <p>A walkthrough of the liquidation process, from barangay request to national sign-off.</p>
+          <div class="news-card__meta">
+            <span>Jul 2026</span>
+            <a class="news-card__cta" href="#">Read more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section faq-section" id="faq">
+    <div class="section__head">
+      <p class="eyebrow">FAQs</p>
+      <h2>How can we help you?</h2>
+      <p class="section__lede">Can't find what you're looking for? Reach the COA Public Information Office through the contact details in the footer.</p>
+    </div>
+    <div class="faq-list">
+      <details open>
+        <summary>What is the "Disaster Audit" site by the Commission on Audit, and what should I know about its purpose?</summary>
+        <p>The Disaster Audit site is an official Commission on Audit (COA) portal that publishes audit findings, summaries, and related documentation on disaster fund utilization.</p>
+      </details>
+      <details>
+        <summary>Who should I contact for media, research, or official inquiries?</summary>
+        <p>Reach the COA Public Information Office through the email, phone number, and address listed in the footer below.</p>
+      </details>
+      <details>
+        <summary>How is personal or sensitive information handled on the site?</summary>
+        <p>The site publishes only official audit findings and fund allocation records — it does not collect or display personal data about individual beneficiaries.</p>
+      </details>
+      <details>
+        <summary>How do I request additional information or report a records request?</summary>
+        <p>Send a request to the Public Information Office by email or phone, listed in the footer, and include the specific report or region you're asking about.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer" id="contact">
+  <a href="#home" class="footer-brand__mark">
+    <img src="images/logo.png" alt="Commission on Audit logo">
+    <span class="footer-brand__name"><strong>Disaster Audit</strong><em>Commission on Audit</em></span>
+  </a>
+  <p>A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.</p>
+  <span class="footer-seal">Republic of the Philippines</span>
+
+  <div class="footer-cols">
+    <nav class="footer-col" aria-label="Site sections">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="#reports">Reports</a></li>
+        <li><a href="#library">Documentation library</a></li>
+        <li><a href="#news">Articles &amp; briefings</a></li>
+        <li><a href="#map">Risk map</a></li>
+        <li><a href="#faq">FAQs</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-col" aria-label="Partner agencies and resources">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="https://www.foi.gov.ph/" target="_blank" rel="noopener">FOI portal</a></li>
+        <li><a href="https://ndrrmc.gov.ph" target="_blank" rel="noopener">NDRRMC</a></li>
+        <li><a href="https://dilg.gov.ph" target="_blank" rel="noopener">DILG</a></li>
+        <li><a href="https://dswd.gov.ph" target="_blank" rel="noopener">DSWD</a></li>
+      </ul>
+    </nav>
+    <div class="footer-col">
+      <h4>Public Information Office</h4>
+      <address>
+        <p>Commission on Audit Central Office<br>Commonwealth Avenue, Quezon City, Philippines</p>
+        <p><a href="mailto:pio@coa.gov.ph">pio@coa.gov.ph</a></p>
+        <p><a href="tel:+6329317592">(02) 8931-7592</a></p>
+      </address>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <p>&copy; 2026 Commission on Audit, Republic of the Philippines. All rights reserved.</p>
+    <div class="footer-legal">
+      <a href="#">Privacy notice</a>
+      <a href="#">Data Privacy Act (RA 10173)</a>
+      <a href="#">Terms of use</a>
+    </div>
+    <div class="footer-language-selector">
+      <select id="language-select" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="fil">Filipino</option>
+      </select>
+    </div>
+  </div>
+</footer>
+
+<!-- Chat support widget — launcher + slide-up panel, matching the
+     "DisasterAudit Support" mockup -->
+<button class="chat-launcher" id="chatLauncher" type="button" aria-haspopup="dialog" aria-controls="chatPanel" aria-expanded="false" aria-label="Open chat support">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-modal="true" aria-labelledby="chatPanelTitle" aria-hidden="true">
+  <div class="chat-panel__head">
+    <span class="chat-panel__avatar"></span>
+    <div class="chat-panel__title">
+      <strong id="chatPanelTitle">DisasterAudit Support</strong>
+      <span><i></i>Usually replies in minutes</span>
+    </div>
+    <button class="chat-panel__close" id="chatPanelClose" type="button" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="chat-panel__body" id="chatPanelBody">
+    <div class="chat-msg chat-msg--bot">
+      <p>Hi! I'm here to help you look into calamity fund reports. What would you like to check?</p>
+      <time>12:01 PM</time>
+    </div>
+    <div class="chat-msg chat-msg--user">
+      <p>Paano ko po makikita ang allocation ng Region V calamity fund?</p>
+      <time>12:02 PM</time>
+    </div>
+    <div class="chat-msg chat-msg--bot">
+      <p>You can check it under the Reports section — it lists allocations by region along with the audit findings for each release.</p>
+      <div class="chat-msg__actions">
+        <a href="#reports" class="chat-quick-btn" data-close-chat>View reports</a>
+        <a href="#contact" class="chat-quick-btn" data-close-chat>Contact PIO</a>
+      </div>
+    </div>
+  </div>
+
+  <form class="chat-panel__composer" id="chatComposer">
+    <input type="text" id="chatInput" placeholder="Type your question…" autocomplete="off">
+    <button type="submit" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </form>
+</div>
+
+<script>
+  // Chat support widget — launcher toggle, plus a lightweight canned reply
+  // so typing something back actually does *something*, no backend needed.
+  (function () {
+    var launcher = document.getElementById('chatLauncher');
+    var panel = document.getElementById('chatPanel');
+    var closeBtn = document.getElementById('chatPanelClose');
+    var body = document.getElementById('chatPanelBody');
+    var form = document.getElementById('chatComposer');
+    var input = document.getElementById('chatInput');
+    if (!launcher || !panel || !closeBtn || !form || !input) return;
+
+    function openChat() {
+      panel.classList.add('is-open');
+      launcher.classList.add('is-open');
+      launcher.setAttribute('aria-expanded', 'true');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+    function closeChat() {
+      panel.classList.remove('is-open');
+      launcher.classList.remove('is-open');
+      launcher.setAttribute('aria-expanded', 'false');
+      panel.setAttribute('aria-hidden', 'true');
+    }
+
+    launcher.addEventListener('click', function () {
+      panel.classList.contains('is-open') ? closeChat() : openChat();
+    });
+    closeBtn.addEventListener('click', closeChat);
+
+    panel.querySelectorAll('[data-close-chat]').forEach(function (link) {
+      link.addEventListener('click', closeChat);
+    });
+
+    function addMessage(text, who) {
+      var msg = document.createElement('div');
+      msg.className = 'chat-msg chat-msg--' + who;
+      var p = document.createElement('p');
+      p.textContent = text;
+      var time = document.createElement('time');
+      var now = new Date();
+      var h = now.getHours() % 12 || 12;
+      var m = ('0' + now.getMinutes()).slice(-2);
+      time.textContent = h + ':' + m + ' ' + (now.getHours() >= 12 ? 'PM' : 'AM');
+      msg.appendChild(p);
+      msg.appendChild(time);
+      body.appendChild(msg);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      input.value = '';
+      setTimeout(function () {
+        addMessage('Thanks — for specific figures, please check the Reports section, or reach the Public Information Office in the footer for anything not covered there.', 'bot');
+      }, 500);
+    });
+  })();
+</script>
+
+<script>
+  // Mobile nav toggle — plain JS, no dependencies
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var nav = document.getElementById('mobileNav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', function () {
+      var open = nav.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      nav.setAttribute('aria-hidden', open ? 'false' : 'true');
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+    nav.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        nav.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        nav.setAttribute('aria-hidden', 'true');
+      });
+    });
+  })();
+
+  // Filter chips — same pattern used for both the reports and the
+  // documentation library rows: click a chip, show only matching items.
+  function setupFilter(rowId, containerId, itemSelector) {
+    var row = document.getElementById(rowId);
+    var container = document.getElementById(containerId);
+    if (!row || !container) return;
+    var chips = Array.prototype.slice.call(row.querySelectorAll('.filter-chip'));
+    var items = Array.prototype.slice.call(container.querySelectorAll(itemSelector));
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var filter = chip.getAttribute('data-filter');
+        items.forEach(function (item) {
+          var match = filter === 'all' || item.getAttribute('data-category') === filter;
+          item.style.display = match ? '' : 'none';
+        });
+      });
+    });
+  }
+  setupFilter('reports-filter-row', 'reports-grid', '.card');
+
+  // Library filter panel — pick a place (region) and/or event (disaster
+  // type), Apply narrows the strip to items matching both (when both are
+  // set); Clear resets everything back to showing all of them.
+  (function () {
+    var openBtn = document.getElementById('libraryFilterBtn');
+    var overlay = document.getElementById('library-filter-overlay');
+    var closeBtn = document.getElementById('libraryFilterClose');
+    var applyBtn = document.getElementById('libraryFilterApply');
+    var clearBtn = document.getElementById('libraryFilterClear');
+    var label = document.getElementById('libraryFilterLabel');
+    var countBadge = document.getElementById('libraryFilterCount');
+    var strip = document.getElementById('library-strip');
+    if (!openBtn || !overlay || !strip) return;
+
+    var pills = Array.prototype.slice.call(overlay.querySelectorAll('.pill'));
+    var items = Array.prototype.slice.call(strip.querySelectorAll('figure'));
+    var selected = { category: null, region: null };
+
+    pills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        var group = pill.closest('.filter-pills').getAttribute('data-filter-type');
+        var value = pill.getAttribute('data-value');
+        var alreadyActive = pill.classList.contains('is-active');
+        overlay.querySelectorAll('.filter-pills[data-filter-type="' + group + '"] .pill').forEach(function (p) {
+          p.classList.remove('is-active');
+        });
+        if (alreadyActive) {
+          selected[group] = null;
+        } else {
+          pill.classList.add('is-active');
+          selected[group] = value;
+        }
+      });
+    });
+
+    function applyFilters() {
+      items.forEach(function (item) {
+        var matchCategory = !selected.category || item.getAttribute('data-category') === selected.category;
+        var matchRegion = !selected.region || item.getAttribute('data-region') === selected.region;
+        item.style.display = (matchCategory && matchRegion) ? '' : 'none';
+      });
+      var count = (selected.category ? 1 : 0) + (selected.region ? 1 : 0);
+      if (count > 0) {
+        label.textContent = 'Filter by place or event';
+        countBadge.textContent = String(count);
+        countBadge.hidden = false;
+      } else {
+        label.textContent = 'Filter by place or event';
+        countBadge.hidden = true;
+      }
+    }
+
+    function openPanel() {
+      overlay.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      if (closeBtn) closeBtn.focus();
+    }
+    function closePanel() {
+      overlay.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closePanel();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePanel();
+    });
+
+    if (applyBtn) applyBtn.addEventListener('click', function () {
+      applyFilters();
+      closePanel();
+    });
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      selected.category = null;
+      selected.region = null;
+      pills.forEach(function (p) { p.classList.remove('is-active'); });
+      applyFilters();
+    });
+  })();
+
+  // "See more" floating panels — same bottom-sheet pattern for both the
+  // reports panel and the documentation library panel. Purely class-driven
+  // (CSS handles the show/hide + animation), so it can't get stuck
+  // regardless of the device's motion settings or transition timing.
+  function setupModal(openBtnId, overlayId, closeBtnId) {
+    var openBtn = document.getElementById(openBtnId);
+    var overlay = document.getElementById(overlayId);
+    var closeBtn = document.getElementById(closeBtnId);
+    if (!openBtn || !overlay || !closeBtn) return;
+
+    function openModal() {
+      overlay.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      closeBtn.focus();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
+    });
+  }
+  setupModal('reports-see-more', 'reports-modal-overlay', 'reports-modal-close');
+  setupModal('library-see-more', 'library-modal-overlay', 'library-modal-close');
+</script>
+</body>
+</html>
