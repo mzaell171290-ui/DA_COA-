@@ -1,5 +1,2613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Disaster Audit — Commission on Audit</title>
+<meta name="description" content="A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  /* =========================================================
+     TOKENS — same ledger palette/type system as the desktop site
+     ========================================================= */
+  :root{
+    --maroon-950:#170709; --maroon-900:#3D0C16; --maroon-700:#7F1425; --maroon-600:#9C1B2F; --maroon-050:#F3E1E3;
+    --gold:#A39B8B; --gold-100:#EDE8DE;
+    --paper:#F9F6F0; --paper-dim:#EFE9DC;
+    --ink:#1A1616; --ink-soft:#3D3A31; --line:#C9C0AE;
+    --font-display:"Fraunces","Iowan Old Style",Georgia,serif;
+    --font-body:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --font-mono:"IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+    --radius-s:6px; --radius-m:14px; --radius-l:26px;
+    --shadow-card:0 1px 2px rgba(58,15,20,.06), 0 12px 30px -18px rgba(58,15,20,.35);
+    --shadow-lift:0 20px 45px -20px rgba(58,15,20,.45);
+    --gutter:20px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; font-family:var(--font-body); color:var(--ink); background:var(--paper);
+    line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%; display:block;}
+  a{color:inherit;}
+  h1,h2,h3,h4{font-family:var(--font-display); margin:0 0 .3em; color:var(--maroon-900); line-height:1.1;}
+  p{margin:0 0 1em;}
+  .eyebrow{
+    font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.14em;
+    font-size:.68rem; color:var(--maroon-700); font-weight:600; margin:0 0 .7em;
+  }
+  .muted{color:var(--ink-soft);}
+  :focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  .skip-link{position:absolute; left:-999px; top:0; background:var(--maroon-700); color:#fff; padding:.8em 1.2em; z-index:999; border-radius:0 0 var(--radius-s) 0;}
+  .skip-link:focus{left:0;}
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+    font-family:var(--font-body); font-weight:600; font-size:.88rem;
+    padding:.85em 1.3em; border-radius:999px; border:1px solid transparent;
+    text-decoration:none; cursor:pointer; transition:background .2s ease, color .2s ease, transform .2s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn--solid{background:var(--maroon-700); color:#fff; box-shadow:var(--shadow-card);}
+  .btn--solid:active{background:var(--maroon-900); transform:scale(.98);}
+  .btn--outline{color:var(--maroon-700); border-color:var(--maroon-700); background:transparent;}
+  .btn--outline:active{background:var(--maroon-700); color:#fff;}
+  .btn--block{width:100%;}
+
+  /* =========================================================
+     HEADER + MOBILE NAV (pure CSS/JS — no GSAP)
+     ========================================================= */
+  .site-header{
+    position:sticky; top:0; z-index:100;
+    background:linear-gradient(160deg, var(--maroon-950) 0%, var(--maroon-900) 60%, var(--maroon-700) 130%);
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.5em var(--gutter); font-family:var(--font-mono); font-size:.64rem;
+    letter-spacing:.06em; color:rgba(255,255,255,.65); border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .topbar__seal{color:var(--gold); margin-right:.4em;}
+
+  .navbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:.7em var(--gutter);
+  }
+  .brand{display:flex; align-items:center; gap:.6em; text-decoration:none;}
+  .brand img{width:34px; height:34px; border-radius:50%; object-fit:cover; background:var(--gold-100);}
+  .brand__name{font-family:var(--font-display); font-size:1.05rem; color:#fff; font-weight:600;}
+  .brand__name em{font-style:normal; color:var(--gold); display:block; font-family:var(--font-mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; font-weight:600;}
+
+  .hamburger{
+    width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.25);
+    background:rgba(255,255,255,.06); position:relative; cursor:pointer; flex:0 0 auto;
+  }
+  .hamburger span{
+    position:absolute; left:11px; right:11px; height:2px; background:#fff; border-radius:2px;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .hamburger span:nth-child(1){top:15px;}
+  .hamburger span:nth-child(2){top:20px;}
+  .hamburger span:nth-child(3){top:25px;}
+  .hamburger.open span:nth-child(1){transform:translateY(5px) rotate(45deg);}
+  .hamburger.open span:nth-child(2){opacity:0;}
+  .hamburger.open span:nth-child(3){transform:translateY(-5px) rotate(-45deg);}
+
+  .mobile-nav{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    background:var(--maroon-950); border-top:1px solid rgba(255,255,255,.08);
+  }
+  .mobile-nav.open{max-height:480px;}
+  .mobile-nav__inner{padding:.6em var(--gutter) 1.4em;}
+  .mobile-nav a{
+    display:block; padding:.85em 0; color:#fff; text-decoration:none; font-weight:600;
+    font-size:.95rem; border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .mobile-nav a span{display:block; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); margin-top:.15em; font-weight:600;}
+  .mobile-nav .btn{margin-top:1em;}
+
+  /* =========================================================
+     HERO
+     ========================================================= */
+  .hero{
+    background:linear-gradient(175deg, var(--maroon-950) 0%, var(--maroon-900) 55%, var(--maroon-700) 140%);
+    color:#fff; padding:1.8em var(--gutter) 2.4em; position:relative; overflow:hidden;
+  }
+  /* ambient gradient wash standing in for the WebGL grainient background —
+     same warm maroon glow, done with layered radial-gradients + a slow CSS
+     keyframe drift instead of a shader */
+  .hero::before{
+    content:""; position:absolute; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 20% 15%, rgba(163,155,139,.20), transparent 60%),
+      radial-gradient(55% 45% at 85% 80%, rgba(127,20,37,.55), transparent 65%);
+    animation:hero-drift 16s ease-in-out infinite alternate;
+  }
+  @keyframes hero-drift{
+    from{ transform:translate(-2%, -1%) scale(1); }
+    to{ transform:translate(2%, 2%) scale(1.06); }
+  }
+  .hero__inner{position:relative; z-index:1;}
+  .hero .eyebrow{color:var(--gold);}
+  .hero__title{font-size:clamp(1.7rem, 7vw, 2.1rem); color:#fff;}
+  .hero__title em{color:var(--gold); font-style:italic;}
+  .hero__lede{color:rgba(249,246,240,.8); font-size:.95rem; max-width:46ch;}
+
+  .hero__search{
+    display:flex; align-items:center; gap:.5em; background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:.3em .3em .3em 1.1em; margin:1.2em 0;
+  }
+  .hero__search input{
+    flex:1; background:none; border:none; color:#fff; font-family:var(--font-body); font-size:.85rem; padding:.6em 0;
+  }
+  .hero__search input::placeholder{color:rgba(255,255,255,.5);}
+  .hero__search button{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--gold);
+    color:var(--maroon-950); font-size:1rem; cursor:pointer; flex:0 0 auto;
+  }
+
+  .hero__stats{display:flex; gap:1.4em; margin:1.4em 0 1.8em; flex-wrap:wrap;}
+  .hero__stats div strong{display:block; font-family:var(--font-mono); font-size:1.3rem; color:var(--gold);}
+  .hero__stats div span{font-size:.72rem; color:rgba(249,246,240,.65);}
+
+  /* live ledger card — a plain looping CSS list standing in for the
+     GSAP CardSwap 3D stack: same content, a much simpler mobile-friendly
+     motion (one row fades/slides in at a time) */
+  .ledger-card{
+    background:var(--maroon-700); border-radius:var(--radius-l); padding:1.3em;
+    box-shadow:var(--shadow-lift); border:1px solid rgba(255,255,255,.08);
+  }
+  .ledger-card__head{display:flex; align-items:center; gap:.5em; font-family:var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--gold-100); margin-bottom:.9em;}
+  .ledger-card__dot{width:7px; height:7px; border-radius:50%; background:#8FD19E; box-shadow:0 0 0 3px rgba(143,209,158,.25); animation:pulse 1.8s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.4;}}
+  .ledger-feed{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.7em;}
+  .ledger-feed li{
+    background:rgba(0,0,0,.14); border-radius:var(--radius-s); padding:.7em .8em;
+    animation:feed-in .5s ease both;
+  }
+  .ledger-feed li:nth-child(2){animation-delay:.1s;}
+  .ledger-feed li:nth-child(3){animation-delay:.2s;}
+  @keyframes feed-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+  .ledger-feed .row{display:flex; justify-content:space-between; align-items:baseline; gap:.6em;}
+  .ledger-feed .amount{font-family:var(--font-mono); font-weight:700; font-size:.78rem; color:#fff;}
+  .ledger-feed .loc{font-size:.76rem; color:rgba(255,255,255,.85);}
+  .ledger-feed time{font-family:var(--font-mono); font-size:.66rem; color:rgba(255,255,255,.5);}
+
+  /* =========================================================
+     SHARED SECTION LAYOUT
+     ========================================================= */
+  .section{padding:2.4em var(--gutter);}
+  .section--tinted{background:var(--paper-dim);}
+  .section__head{margin-bottom:1.2em;}
+  .section__lede{color:var(--ink-soft); font-size:.92rem; max-width:52ch;}
+
+  .filter-row{display:flex; gap:.5em; overflow-x:auto; padding-bottom:.3em; margin-bottom:1.2em; -webkit-overflow-scrolling:touch;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{
+    flex:0 0 auto; font-family:var(--font-mono); font-size:.7rem; letter-spacing:.04em; text-transform:uppercase;
+    padding:.6em 1.05em; border-radius:999px; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink-soft); cursor:pointer; white-space:nowrap; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .filter-chip.is-active{background:var(--maroon-700); border-color:var(--maroon-700); color:#fff;}
+
+  /* library "Filter" button — opens the place/event panel */
+  .filter-btn{
+    display:flex; align-items:center; gap:.6em; width:100%; margin-bottom:1.2em;
+    background:#fff; border:1px solid var(--line); border-radius:999px; padding:.8em 1.1em;
+    font-family:var(--font-body); font-size:.85rem; font-weight:600; color:var(--ink);
+    cursor:pointer; text-align:left;
+  }
+  .filter-btn svg{flex:0 0 auto; color:var(--maroon-700);}
+  .filter-btn span:first-of-type{flex:1;}
+  .filter-btn__count{
+    flex:0 0 auto; min-width:20px; height:20px; padding:0 .4em; border-radius:999px;
+    background:var(--maroon-700); color:#fff; font-family:var(--font-mono); font-size:.68rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* place/event filter panel contents */
+  .filter-group{margin-bottom:1.4em;}
+  .filter-group:last-child{margin-bottom:0;}
+  .filter-group h4{
+    font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em;
+    color:var(--ink-soft); margin-bottom:.7em;
+  }
+  .filter-pills{display:flex; flex-wrap:wrap; gap:.5em;}
+  .filter-pills .pill{
+    font-family:var(--font-body); font-size:.82rem; font-weight:600; color:var(--ink-soft);
+    background:var(--paper-dim); border:1px solid transparent; border-radius:999px;
+    padding:.6em 1.1em; cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .filter-pills .pill.is-active{background:var(--maroon-700); color:#fff;}
+  .modal-panel__actions{display:flex; gap:.7em; padding-top:1.2em; margin-top:.4em; border-top:1px solid var(--line);}
+  .modal-panel__actions .btn{flex:1;}
+
+  .card-grid{display:flex; flex-direction:column; gap:1em;}
+  .card{
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-m);
+    box-shadow:var(--shadow-card); overflow:hidden;
+  }
+  .card__media{position:relative; aspect-ratio:16/9; background:var(--paper-dim); overflow:hidden;}
+  .card__media img{width:100%; height:100%; object-fit:cover; display:block;}
+  .card__stamp{
+    position:absolute; right:14px; bottom:-22px; z-index:2;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--paper); border:1.5px dashed var(--maroon-600);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.56rem; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--maroon-700);
+    transform:rotate(-14deg); box-shadow:0 4px 10px -4px rgba(58,15,20,.35);
+  }
+  .card__body{padding:1.6em 1.2em 1.2em;}
+  .card__kicker{font-family:var(--font-mono); font-size:.64rem; text-transform:uppercase; letter-spacing:.1em; color:var(--maroon-700); font-weight:700; margin-bottom:.4em;}
+  .card h3{font-size:1.05rem; margin-bottom:.3em;}
+  .card p{font-size:.85rem; color:var(--ink-soft); margin-bottom:.9em;}
+  .card__meta{display:flex; justify-content:space-between; align-items:center; font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft);}
+  .card__meta strong{color:var(--maroon-700);}
+  .see-more{margin-top:1.2em;}
+
+  /* articles & briefings — modern editorial cards: gradient thumb with
+     a floating tag pill, hover lift, and a stretched-link "Read more" */
+  .news-grid{display:flex; flex-direction:column; gap:1.1em;}
+  .news-card{
+    position:relative; display:flex; flex-direction:column;
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius-m);
+    overflow:hidden; box-shadow:var(--shadow-card);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .news-card:hover, .news-card:focus-within{
+    transform:translateY(-4px); box-shadow:var(--shadow-lift); border-color:var(--maroon-700);
+  }
+  .news-card__thumb{
+    position:relative; aspect-ratio:16/9; overflow:hidden;
+    display:flex; align-items:flex-end; padding:.9em;
+    background:linear-gradient(135deg, var(--maroon-900) 0%, var(--maroon-700) 55%, var(--gold) 150%);
+  }
+  .news-card__thumb::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 12% 0%, rgba(255,255,255,.22), transparent 55%);
+    mix-blend-mode:overlay; pointer-events:none;
+  }
+  .news-card__tag{
+    position:relative; z-index:1; font-family:var(--font-mono); font-size:.62rem;
+    text-transform:uppercase; letter-spacing:.1em; font-weight:700; color:#fff;
+    background:rgba(23,7,9,.4); border:1px solid rgba(255,255,255,.35);
+    padding:.35em .75em; border-radius:999px; backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+  }
+  .news-card__body{padding:1.1em 1.2em 1.2em; display:flex; flex-direction:column; flex:1;}
+  .news-card__body h3{font-size:1rem; margin-bottom:.35em;}
+  .news-card__body p{font-size:.85rem; color:var(--ink-soft); margin-bottom:1em; flex:1;}
+  .news-card__meta{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft);
+    border-top:1px solid var(--paper-dim); padding-top:.8em;
+  }
+  .news-card__cta{
+    position:relative; display:inline-flex; align-items:center; gap:.3em;
+    font-family:var(--font-body); font-weight:600; font-size:.8rem; color:var(--maroon-700);
+    text-decoration:none; transition:gap .2s ease;
+  }
+  .news-card__cta::after{content:""; position:absolute; inset:0;}
+  .news-card:hover .news-card__cta{gap:.5em;}
+  @media (min-width:600px){ .news-grid{display:grid; grid-template-columns:1fr 1fr; gap:1.2em;} }
+
+  /* =========================================================
+     FLOATING "MORE REPORTS" PANEL — bottom-sheet modal, pure CSS
+     transitions (transform/opacity), no dependencies
+     ========================================================= */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:200;
+    display:flex; align-items:flex-end; justify-content:center;
+    background:rgba(23,7,9,.55); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden; pointer-events:none;
+    transition:opacity .3s ease, visibility 0s linear .3s;
+  }
+  .modal-overlay.is-open{
+    opacity:1; visibility:visible; pointer-events:auto;
+    transition:opacity .3s ease, visibility 0s linear 0s;
+  }
+
+  .modal-panel{
+    width:100%; max-width:520px; max-height:86vh; overflow-y:auto;
+    background:var(--paper); border-radius:24px 24px 0 0;
+    box-shadow:0 -20px 60px -20px rgba(23,7,9,.5);
+    padding:.6em var(--gutter) 2em;
+    transform:translateY(100%); transition:transform .38s cubic-bezier(.22,.9,.32,1);
+  }
+  .modal-overlay.is-open .modal-panel{transform:translateY(0);}
+
+  .modal-panel__handle{width:40px; height:4px; border-radius:999px; background:var(--line); margin:.7em auto 1em;}
+  .modal-panel__head{display:flex; align-items:center; justify-content:space-between; margin-bottom:1.1em;}
+  .modal-panel__head h3{margin:0; font-size:1.15rem;}
+  .modal-panel__close{
+    width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:#fff;
+    color:var(--ink-soft); font-size:.85rem; cursor:pointer; flex:0 0 auto;
+  }
+  .modal-panel__body{display:flex; flex-direction:column; gap:1em;}
+
+  /* modernized report card — used inside the floating panel */
+  .modern-card{
+    position:relative; background:#fff; border-radius:var(--radius-l);
+    box-shadow:0 1px 2px rgba(58,15,20,.05), 0 16px 32px -20px rgba(58,15,20,.35);
+    border:1px solid rgba(201,192,174,.5); overflow:hidden;
+    opacity:0; transform:translateY(10px); animation:modern-card-in .45s ease forwards;
+  }
+  @keyframes modern-card-in{ to{ opacity:1; transform:translateY(0); } }
+  .modal-panel__body .modern-card:nth-child(1){animation-delay:.05s;}
+  .modal-panel__body .modern-card:nth-child(2){animation-delay:.12s;}
+  .modal-panel__body .modern-card:nth-child(3){animation-delay:.19s;}
+  .modal-panel__body .modern-card:nth-child(4){animation-delay:.26s;}
+  .modal-panel__body .modern-card:nth-child(5){animation-delay:.33s;}
+  .modal-panel__body .modern-card:nth-child(6){animation-delay:.4s;}
+
+  .modern-card__media{position:relative; aspect-ratio:16/9; background:var(--paper-dim); overflow:hidden;}
+  .modern-card__media img{width:100%; height:100%; object-fit:cover; display:block;}
+  .modern-card__stamp{
+    position:absolute; right:14px; bottom:-22px; z-index:2;
+    width:56px; height:56px; border-radius:50%;
+    background:var(--paper); border:1.5px dashed var(--maroon-600);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.56rem; font-weight:700; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--maroon-700);
+    transform:rotate(-14deg); box-shadow:0 4px 10px -4px rgba(58,15,20,.35);
+  }
+  .modern-card__body{padding:1.6em 1.3em 1.1em;}
+
+  .modern-card__top{display:flex; align-items:center; margin-bottom:.9em;}
+  .modern-card__tag{
+    font-family:var(--font-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--maroon-700); font-weight:700; background:var(--maroon-050);
+    padding:.35em .7em; border-radius:999px;
+  }
+  .modern-card h4{font-size:1rem; margin-bottom:.35em;}
+  .modern-card p{font-size:.85rem; color:var(--ink-soft); margin-bottom:1em;}
+
+  .modern-card__progress{display:flex; align-items:center; gap:.7em; margin-bottom:1em;}
+  .modern-card__progress-track{flex:1; height:6px; border-radius:999px; background:var(--paper-dim); overflow:hidden;}
+  .modern-card__progress-fill{height:100%; border-radius:999px; background:linear-gradient(90deg, var(--maroon-700), var(--maroon-600));}
+  .modern-card__progress span{font-family:var(--font-mono); font-size:.7rem; color:var(--maroon-700); font-weight:700; white-space:nowrap;}
+  .modern-card__progress span em{font-style:normal; color:var(--ink-soft); font-weight:600;}
+
+  .modern-card__foot{display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--paper-dim); padding-top:.8em;}
+  .modern-card__foot span{font-family:var(--font-mono); font-size:.68rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;}
+  .modern-card__foot a{font-size:.8rem; font-weight:600; color:var(--maroon-700); text-decoration:none;}
+
+  /* documentation card — same modern-card shell, with a photo thumbnail
+     up top instead of a progress bar */
+  .doc-card__thumb{
+    aspect-ratio:16/9; border-radius:var(--radius-m); margin-bottom:.9em;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    font-family:var(--font-mono); font-size:.66rem; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-soft); padding:1em;
+  }
+  .doc-card .modern-card__top{margin-bottom:.6em;}
+
+  body.modal-open{overflow:hidden;}
+
+  /* =========================================================
+     CHAT SUPPORT WIDGET — floating launcher + slide-up panel,
+     matching the "DisasterAudit Support" reference mockup
+     ========================================================= */
+  .chat-launcher{
+    position:fixed; right:1.1em; bottom:1.1em; z-index:220;
+    width:56px; height:56px; border-radius:50%; border:none;
+    background:var(--maroon-700); color:#fff; box-shadow:0 14px 30px -10px rgba(23,7,9,.5);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:background .2s ease, transform .2s ease;
+  }
+  .chat-launcher:active{transform:scale(.94);}
+  .chat-launcher.is-open{background:var(--maroon-900);}
+
+  .chat-panel{
+    position:fixed; right:1.1em; bottom:5.2em; z-index:219;
+    width:min(88vw, 340px); max-height:70vh;
+    background:var(--paper); border-radius:var(--radius-l);
+    box-shadow:0 30px 60px -20px rgba(23,7,9,.5);
+    display:flex; flex-direction:column; overflow:hidden;
+    transform-origin:bottom right;
+    opacity:0; visibility:hidden; transform:scale(.9) translateY(10px);
+    transition:opacity .25s ease, transform .25s ease, visibility 0s linear .25s;
+  }
+  .chat-panel.is-open{
+    opacity:1; visibility:visible; transform:scale(1) translateY(0);
+    transition:opacity .25s ease, transform .25s ease, visibility 0s linear 0s;
+  }
+
+  .chat-panel__head{
+    display:flex; align-items:center; gap:.7em; padding:1em 1.1em;
+    background:linear-gradient(160deg, var(--maroon-950), var(--maroon-700));
+  }
+  .chat-panel__avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--gold-100); flex:0 0 auto;
+  }
+  .chat-panel__title{flex:1; min-width:0;}
+  .chat-panel__title strong{display:block; color:#fff; font-family:var(--font-display); font-size:.95rem;}
+  .chat-panel__title span{
+    display:flex; align-items:center; gap:.35em; font-size:.68rem; color:rgba(249,246,240,.7);
+  }
+  .chat-panel__title span i{width:6px; height:6px; border-radius:50%; background:#8FD19E; display:inline-block;}
+  .chat-panel__close{
+    width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,.12);
+    color:#fff; font-size:.75rem; cursor:pointer; flex:0 0 auto;
+  }
+
+  .chat-panel__body{flex:1; overflow-y:auto; padding:1em 1.1em; display:flex; flex-direction:column; gap:.8em;}
+  .chat-msg{max-width:88%;}
+  .chat-msg p{
+    margin:0; font-size:.82rem; line-height:1.4; padding:.7em .9em; border-radius:var(--radius-m);
+  }
+  .chat-msg time{display:block; font-family:var(--font-mono); font-size:.6rem; color:var(--ink-soft); margin-top:.3em;}
+  .chat-msg--bot{align-self:flex-start;}
+  .chat-msg--bot p{background:#fff; border:1px solid var(--line); color:var(--ink); border-bottom-left-radius:4px;}
+  .chat-msg--user{align-self:flex-end;}
+  .chat-msg--user p{background:var(--maroon-700); color:#fff; border-bottom-right-radius:4px;}
+  .chat-msg--user time{text-align:right;}
+  .chat-msg__actions{display:flex; gap:.5em; margin-top:.5em; flex-wrap:wrap;}
+  .chat-quick-btn{
+    font-size:.74rem; font-weight:600; color:var(--maroon-700); text-decoration:none;
+    border:1px solid var(--maroon-700); border-radius:999px; padding:.5em 1em;
+  }
+
+  .chat-panel__composer{
+    display:flex; align-items:center; gap:.5em; padding:.7em .8em;
+    border-top:1px solid var(--line); background:var(--paper);
+  }
+  .chat-panel__composer input{
+    flex:1; border:none; background:var(--paper-dim); border-radius:999px; padding:.7em 1em;
+    font-family:var(--font-body); font-size:.82rem; color:var(--ink);
+  }
+  .chat-panel__composer input:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .chat-panel__composer button{
+    width:38px; height:38px; border-radius:50%; border:none; background:var(--maroon-700); color:#fff;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; flex:0 0 auto;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .chat-panel{transition:none !important;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .modal-overlay, .modal-panel, .modern-card{animation:none !important; transition:none !important;}
+  }
+
+  /* library — simple horizontal scroll strip, mobile-first replacement
+     for the WebGL dome sphere */
+  .photo-strip{display:flex; gap:.7em; overflow-x:auto; padding-bottom:.4em; -webkit-overflow-scrolling:touch; scroll-snap-type:x mandatory;}
+  .photo-strip::-webkit-scrollbar{display:none;}
+  .photo-strip figure{
+    flex:0 0 76%; margin:0; scroll-snap-align:start; border-radius:var(--radius-m); overflow:hidden;
+    box-shadow:var(--shadow-card); border:1px solid var(--line); background:var(--paper-dim); aspect-ratio:4/3;
+    position:relative;
+  }
+  .photo-strip figure .ph{
+    width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    color:var(--ink-soft); font-family:var(--font-mono); font-size:.66rem; letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:1em;
+  }
+  .photo-strip figcaption{
+    position:absolute; left:0; right:0; bottom:0; padding:.6em .8em;
+    background:linear-gradient(to top, rgba(23,7,9,.75), transparent);
+    color:#fff; font-size:.72rem; font-family:var(--font-mono);
+  }
+
+  /* risk map — dark hero-matching panel with a donut breakdown by risk
+     tier (no named regions, just the aggregate exposure picture) */
+  .section--risk{
+    background:linear-gradient(175deg, var(--maroon-950) 0%, var(--maroon-900) 55%, var(--maroon-700) 140%);
+    color:#fff; position:relative; overflow:hidden;
+  }
+  .section--risk::before{
+    content:""; position:absolute; inset:-20%; z-index:0; pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 80% 12%, rgba(163,155,139,.20), transparent 60%),
+      radial-gradient(55% 45% at 12% 88%, rgba(127,20,37,.55), transparent 65%);
+    animation:hero-drift 18s ease-in-out infinite alternate;
+  }
+  .section--risk .section__head, .section--risk .risk-panel{position:relative; z-index:1;}
+  .section--risk .eyebrow{color:var(--gold);}
+  .section--risk h2{color:#fff;}
+  .section--risk .section__lede{color:rgba(249,246,240,.75);}
+
+  .risk-panel{
+    display:flex; flex-wrap:wrap; align-items:center; gap:1.8em;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.14);
+    border-radius:var(--radius-l); padding:1.6em;
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    box-shadow:var(--shadow-lift);
+  }
+  .risk-video{
+    flex:1 1 320px; min-width:260px; max-width:460px;
+    aspect-ratio:16/9; width:100%; border-radius:var(--radius-m);
+    overflow:hidden; background:var(--maroon-950);
+    border:1px solid rgba(255,255,255,.16); box-shadow:var(--shadow-card);
+  }
+  .risk-video video{width:100%; height:100%; object-fit:cover; display:block;}
+  .risk-panel__text{flex:1 1 240px; min-width:220px;}
+  .risk-panel__text h3{
+    color:#fff; font-size:clamp(1.05rem, 2vw + .6rem, 1.3rem); margin:0 0 .4em;
+  }
+  .risk-panel__text p{color:rgba(249,246,240,.75); font-size:.9rem; margin:0;}
+
+  /* FAQ — native <details>, no JS needed */
+  .faq-list{display:flex; flex-direction:column; gap:.7em;}
+  .faq-list details{
+    background:var(--paper-dim); border:none; border-radius:var(--radius-m); padding:.3em 1.1em;
+    transition:background .25s ease;
+  }
+  .faq-list summary{
+    padding:1em 0; font-weight:700; font-size:.92rem; cursor:pointer; list-style:none;
+    display:flex; justify-content:space-between; align-items:center; gap:1em; line-height:1.35;
+  }
+  .faq-list summary::-webkit-details-marker{display:none;}
+  .faq-list summary::after{
+    content:"+"; flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background:#fff; color:var(--maroon-700); font-family:var(--font-mono); font-size:1rem; font-weight:700;
+    transition:background .2s ease, color .2s ease;
+  }
+  .faq-list details[open]{background:var(--maroon-700); color:#fff;}
+  .faq-list details[open] summary::after{content:"–"; background:rgba(255,255,255,.16); color:#fff;}
+  .faq-list p{font-size:.85rem; color:var(--ink-soft); padding-bottom:1em; margin:0;}
+  .faq-list details[open] p{color:rgba(249,246,240,.85);}
+
+  /* =========================================================
+     FOOTER
+     ========================================================= */
+  .site-footer{background:var(--maroon-950); color:rgba(249,246,240,.75); padding:2.2em var(--gutter) 1.4em;}
+  .footer-brand__mark{display:flex; align-items:center; gap:.7em; text-decoration:none; margin-bottom:.9em;}
+  .footer-brand__mark img{width:40px; height:40px; border-radius:50%; object-fit:cover; background:var(--gold-100);}
+  .footer-brand__name strong{display:block; font-family:var(--font-display); font-size:1.1rem; color:#fff;}
+  .footer-brand__name em{font-style:normal; font-family:var(--font-mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold);}
+  .site-footer p{font-size:.85rem;}
+  .footer-seal{display:inline-block; font-family:var(--font-mono); font-size:.64rem; letter-spacing:.08em; text-transform:uppercase; color:var(--gold); border-top:1px solid rgba(255,255,255,.15); padding-top:.9em; margin-top:.4em;}
+
+  .footer-cols{display:flex; flex-direction:column; gap:1.6em; margin:1.8em 0;}
+  .footer-col h4{font-family:var(--font-mono); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); margin-bottom:.8em;}
+  .footer-col ul{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.6em;}
+  .footer-col a{text-decoration:none; font-size:.87rem; color:rgba(249,246,240,.8);}
+  .footer-col address{font-style:normal; font-size:.85rem;}
+  .footer-col address p{margin:0 0 .6em;}
+
+  .footer-meta{border-top:1px solid rgba(255,255,255,.12); padding-top:1.2em; font-size:.76rem; display:flex; flex-direction:column; gap:.9em;}
+  .footer-legal{display:flex; flex-wrap:wrap; gap:.5em 1em;}
+  .footer-legal a{text-decoration:none; color:rgba(249,246,240,.6);}
+  .footer-language-selector select{
+    background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.2);
+    border-radius:999px; padding:.5em 1em; font-family:var(--font-body); font-size:.8rem;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .hero::before{animation:none;}
+    .ledger-card__dot{animation:none;}
+    .ledger-feed li{animation:none;}
+  }
+
+  /* widen up gracefully — still a mobile-first layout, just breathes a
+     little more on larger phones/small tablets */
+  @media (min-width:480px){
+    :root{--gutter:28px;}
+    .card-grid{display:grid; grid-template-columns:1fr 1fr; gap:1em;}
+  }
+
+  /* reports — a plain stacked list, one full-width card per row */
+  #reports-grid{display:flex; flex-direction:column; gap:1em;}
+
+
+/* =========================================================
+     BENTO GALLERY GRID — modern, gapless cards
+     ========================================================= */
+  .card-grid--gallery{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    grid-auto-rows:130px;
+    grid-auto-flow:dense;
+    gap:.5em;
+  }
+
+  /* kill every default browser margin on figure/figcaption/h4/p/time
+     inside gallery cards — this is what was causing the extra space */
+  .card-grid--gallery .gallery-card,
+  .card-grid--gallery .gallery-card figcaption,
+  .card-grid--gallery .gallery-card h4,
+  .card-grid--gallery .gallery-card p,
+  .card-grid--gallery .gallery-card time{
+    margin:0;
+  }
+
+  .card-grid--gallery .gallery-card{
+    position:relative;
+    grid-column:span 1;
+    grid-row:span 2;
+    border-radius:var(--radius-m);
+    overflow:hidden;
+    background:linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-card);
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .card-grid--gallery .gallery-card:hover,
+  .card-grid--gallery .gallery-card:focus-within{
+    transform:translateY(-3px);
+    box-shadow:var(--shadow-lift);
+  }
+
+  /* image fills the whole tile — no inline gaps, no alt-text leaking */
+  .card-grid--gallery .gallery-card img{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+    transition:transform .5s ease, opacity .3s ease;
+    font-size:0;              /* hides broken-image alt text/icon */
+    color:transparent;
+  }
+  .card-grid--gallery .gallery-card:hover img{ transform:scale(1.06); }
+
+  /* caption always overlays the bottom, full width, no seams */
+  .card-grid--gallery .gallery-card figcaption{
+    position:absolute; left:0; right:0; bottom:0; z-index:1;
+    padding:1.4em .8em .6em;
+    background:linear-gradient(to top, rgba(23,7,9,.88), rgba(23,7,9,.35) 55%, transparent);
+    color:#fff;
+  }
+  .card-grid--gallery .gallery-card figcaption .card__kicker{
+    color:var(--gold); margin:0 0 .2em; font-size:.6rem;
+  }
+  .card-grid--gallery .gallery-card figcaption h4{
+    color:#fff; font-size:.8rem; line-height:1.25; margin:0 0 .15em;
+  }
+  .card-grid--gallery .gallery-card figcaption time{
+    font-family:var(--font-mono); font-size:.6rem; color:rgba(255,255,255,.7);
+  }
+
+  .card-grid--gallery .gallery-card:nth-child(6n+1){ grid-column:span 2; grid-row:span 3; }
+  .card-grid--gallery .gallery-card:nth-child(6n+5){ grid-row:span 3; }
+
+  @media (min-width:480px){
+    .card-grid--gallery{ grid-template-columns:repeat(4, 1fr); grid-auto-rows:110px; }
+    .card-grid--gallery .gallery-card{ grid-column:span 2; grid-row:span 2; }
+    .card-grid--gallery .gallery-card:nth-child(6n+1){ grid-column:span 2; grid-row:span 3; }
+    .card-grid--gallery .gallery-card:nth-child(10n+1){ grid-column:span 4; grid-row:span 3; }
+    .card-grid--gallery .gallery-card:nth-child(10n+4){ grid-column:span 2; grid-row:span 4; }
+    .card-grid--gallery .gallery-card:nth-child(10n+7){ grid-column:span 3; grid-row:span 2; }
+  }
+
+  /* =====================================================================
+   DOME GALLERY — immersive 3D photo sphere
+   Reads its images straight from the existing .gallery-card markup,
+   so nothing in the library is ever hidden or dropped — it all
+   just gets a more dramatic way to be seen.
+
+   No boxed card here on purpose: the wrap has no background, border,
+   or shadow of its own — it blends straight into whatever section
+   background sits behind it (set per-instance via --dome-bg below).
+   ===================================================================== */
+
+body.dg-scroll-lock { overflow: hidden; }
+
+.dome-wrap {
+  position: relative;
+  width: 100%;
+  --dome-bg: var(--paper);
+}
+
+.dome-wrap--teaser { height: clamp(360px, 46vw, 480px); --dome-bg: var(--paper-dim); }
+.dome-wrap--full   { height: clamp(450px, 62vh, 630px); margin-top: 1.2em; --dome-bg: var(--paper); }
+
+.dome-hint {
+  position: absolute;
+  left: 50%;
+  bottom: .6em;
+  transform: translateX(-50%);
+  z-index: 6;
+  margin: 0;
+  padding: .5em 1.2em;
+  font-family: var(--font-mono);
+  font-size: .66rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  animation: dome-hint-in .6s ease .5s forwards;
+}
+@keyframes dome-hint-in { to { opacity: .85; } }
+.dome-wrap.is-interacted .dome-hint { opacity: 0 !important; transition: opacity .4s ease; }
+
+.dome-gallery {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  --radius: 520px;
+  --circ: calc(var(--radius) * 3.14159);
+  --rot-y: calc((360deg / var(--segments-x, 20)) / 2);
+  --rot-x: calc((360deg / var(--segments-y, 20)) / 2);
+  --item-width: calc(var(--circ) / var(--segments-x, 20));
+  --item-height: calc(var(--circ) / var(--segments-y, 20));
+  --spot-x: 50%;
+  --spot-y: 40%;
+}
+
+.dome-gallery * { box-sizing: border-box; }
+
+.dome-gallery__stage,
+.dome-gallery__sphere,
+.dome-item,
+.dome-item__tile {
+  transform-style: preserve-3d;
+}
+
+.dome-gallery__main {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.dome-gallery__main:active { cursor: grabbing; }
+
+/* soft warm spotlight that tracks the pointer — a hint of maroon, not a
+   spotlight cone, so it reads as ambient light rather than an effect */
+.dome-gallery__main::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(420px 420px at var(--spot-x) var(--spot-y), rgba(168,51,71,.12), transparent 65%);
+  mix-blend-mode: multiply;
+  transition: opacity .3s ease;
+}
+
+.dome-gallery__stage {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  perspective: calc(var(--radius) * 2.1);
+  perspective-origin: 50% 50%;
+  contain: layout paint size;
+}
+
+.dome-gallery__sphere {
+  transform: translateZ(calc(var(--radius) * -1));
+  will-change: transform;
+}
+
+.dome-item {
+  width: calc(var(--item-width) * var(--item-size-x, 2));
+  height: calc(var(--item-height) * var(--item-size-y, 2));
+  position: absolute;
+  top: -999px; bottom: -999px; left: -999px; right: -999px;
+  margin: auto;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  transition: transform .35s cubic-bezier(.22,.9,.32,1), opacity .5s ease;
+  opacity: 0;
+  transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x, 2) - 1) / 2)) + var(--rot-y-delta, 0deg)))
+    rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y, 2) - 1) / 2)) + var(--rot-x-delta, 0deg)))
+    translateZ(var(--radius)) scale(.82);
+}
+.dome-item.is-visible { opacity: 1; transform: rotateY(calc(var(--rot-y) * (var(--offset-x) + ((var(--item-size-x, 2) - 1) / 2)) + var(--rot-y-delta, 0deg)))
+    rotateX(calc(var(--rot-x) * (var(--offset-y) - ((var(--item-size-y, 2) - 1) / 2)) + var(--rot-x-delta, 0deg)))
+    translateZ(var(--radius)) scale(1); }
+
+.dome-item__tile {
+  position: absolute;
+  inset: 7px;
+  display: block;
+  border: none;
+  padding: 0;
+  border-radius: var(--radius-m);
+  background: linear-gradient(135deg, var(--paper-dim), var(--gold-100));
+  overflow: hidden;
+  backface-visibility: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
+  transform: translateZ(0) scale(1);
+  box-shadow: 0 10px 24px -16px rgba(23,7,9,.5);
+  transition: box-shadow .3s ease, transform .3s ease;
+}
+.dome-item__tile:hover,
+.dome-item__tile:focus-visible {
+  box-shadow: 0 18px 34px -16px rgba(23,7,9,.55), 0 0 0 1px var(--gold);
+  transform: translateZ(0) scale(1.045);
+  outline: none;
+}
+
+.dome-item__tile img {
+  width: 100%; height: 100%; object-fit: cover;
+  pointer-events: none;
+  backface-visibility: hidden;
+  filter: grayscale(.7) sepia(.25) saturate(1.15) contrast(1.03);
+  transition: filter .5s ease, transform 6s linear;
+  transform: scale(1.02);
+}
+.dome-item__tile:hover img,
+.dome-item__tile:focus-visible img {
+  filter: grayscale(0) sepia(0) saturate(1.08) contrast(1.03);
+  transform: scale(1.09);
+}
+
+/* edges of the sphere dissolve into whatever's behind the wrap, rather
+   than being clipped by a visible box */
+.dome-gallery__overlay,
+.dome-gallery__overlay--blur {
+  position: absolute; inset: 0; margin: auto; z-index: 3; pointer-events: none;
+}
+.dome-gallery__overlay {
+  background-image: radial-gradient(rgba(0,0,0,0) 62%, var(--dome-bg) 100%);
+}
+.dome-gallery__overlay--blur {
+  -webkit-mask-image: radial-gradient(rgba(0,0,0,0) 70%, var(--dome-bg) 92%);
+  mask-image: radial-gradient(rgba(0,0,0,0) 70%, var(--dome-bg) 92%);
+  backdrop-filter: blur(2px);
+}
+.dome-gallery__edge {
+  position: absolute; left: 0; right: 0; height: 80px; z-index: 5; pointer-events: none;
+}
+.dome-gallery__edge--top { top: 0; background: linear-gradient(to bottom, var(--dome-bg), transparent); }
+.dome-gallery__edge--bottom { bottom: 0; background: linear-gradient(to top, var(--dome-bg), transparent); }
+
+/* =====================================================================
+   FULLSCREEN LIGHTBOX — shared singleton, appended once to <body> so it
+   can pop out to the full viewport regardless of how small the dome's
+   own container is.
+   ===================================================================== */
+.dome-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+}
+.dome-lightbox.is-open { display: block; }
+
+.dome-lightbox__scrim {
+  position: absolute; inset: 0;
+  background: rgba(23,7,9,.82);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.dome-lightbox.is-open .dome-lightbox__scrim { opacity: 1; }
+
+.dome-lightbox__stage {
+  position: absolute; inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2em;
+  padding: 2em 1.5em;
+  pointer-events: none;
+}
+
+.dome-lightbox__frame {
+  position: relative;
+  border-radius: var(--radius-l);
+  overflow: hidden;
+  box-shadow: 0 40px 90px -24px rgba(0,0,0,.55);
+  background: var(--maroon-950);
+  pointer-events: auto;
+}
+.dome-lightbox__frame img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.dome-lightbox__plaque {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 1em 1.7em 1.15em;
+  border-radius: var(--radius-m);
+  border-top: 3px solid var(--maroon-700);
+  box-shadow: var(--shadow-card);
+  max-width: min(640px, 86vw);
+  text-align: center;
+  opacity: 0;
+  pointer-events: auto;
+}
+.dome-lightbox__plaque .card__kicker { color: var(--maroon-700); margin: 0 0 .25em; }
+.dome-lightbox__plaque h4 {
+  margin: 0 0 .3em; font-family: var(--font-display); font-weight: 600; color: var(--maroon-900);
+  font-size: clamp(1rem, 1.3vw + .6rem, 1.3rem);
+}
+.dome-lightbox__plaque time { font-family: var(--font-mono); font-size: .72rem; color: var(--ink-soft); }
+
+.dome-lightbox__close {
+  position: fixed; top: 1.5em; right: 1.5em; z-index: 10000;
+  width: 42px; height: 42px; border-radius: 50%; border: none;
+  background: var(--paper-dim); color: var(--maroon-700); font-size: 1rem;
+  cursor: pointer; opacity: 0; pointer-events: none;
+  transition: background .2s ease, color .2s ease, opacity .3s ease;
+}
+.dome-lightbox__close:hover { background: var(--maroon-700); color: #fff; }
+.dome-lightbox.is-open .dome-lightbox__close { opacity: 1; pointer-events: auto; }
+
+/* ---------- Grid / dome toggle (inside modal) ---------- */
+.gallery-view-toggle {
+  display: inline-flex; gap: .3em; padding: .3em; margin: 0 0 1.2em;
+  background: var(--paper-dim); border-radius: 999px; border: 1px solid var(--line);
+}
+.view-toggle-btn {
+  border: none; background: transparent; padding: .55em 1.2em; border-radius: 999px;
+  font-family: var(--font-body); font-size: .82rem; font-weight: 600; color: var(--ink-soft);
+  cursor: pointer; transition: background .2s ease, color .2s ease;
+}
+.view-toggle-btn.is-active { background: var(--maroon-700); color: #fff; }
+.view-toggle-btn:not(.is-active):hover { color: var(--maroon-700); }
+
+.card-grid--gallery.is-hidden,
+.gallery-card.is-hidden,
+.dome-wrap.is-hidden { display: none; }
+
+/* --- MOBILE (<= 767px) — phones --- */
+@media (max-width: 767px) {
+  .dome-wrap--teaser { height: clamp(300px, 78vw, 380px); }
+  .dome-wrap--full { height: 56vh; }
+  .dome-lightbox__plaque h4 { font-size: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dome-item, .dome-item__tile, .dome-item__tile img,
+  .dome-lightbox__plaque, .dome-lightbox__frame, .dome-lightbox__scrim { transition: none !important; }
+}
+
 .section__more{
     display:flex;
     justify-content:center;
     margin-top:1.2em;
   }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="topbar">
+    <span><span class="topbar__seal">★</span>Republic of the Philippines</span>
+    <span>gov.ph</span>
+  </div>
+  <div class="navbar">
+    <a class="brand" href="#home">
+      <img src="images/logo.png" alt="Commission on Audit logo">
+      <span class="brand__name">Disaster Audit<em>Commission on Audit</em></span>
+    </a>
+    <button class="hamburger" id="navToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <nav class="mobile-nav" id="mobileNav" aria-hidden="true">
+    <div class="mobile-nav__inner">
+      <a href="#reports">Reports<span>Where the money went</span></a>
+      <a href="#library">Documentation library<span>Photos &amp; source records</span></a>
+      <a href="#map">Risk map<span>Exposure by region</span></a>
+      <a href="#news">Articles &amp; briefings<span>Latest findings</span></a>
+      <a href="#faq">FAQs<span>How to read the ledger</span></a>
+      <a class="btn btn--solid btn--block" href="#reports">Search the ledger</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div class="hero__inner">
+    <p class="eyebrow">Calamity fund tracker</p>
+    <h1 class="hero__title">Every peso, from the <em>national treasury</em> to the barangay.</h1>
+    <p class="hero__lede">A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending down to the last liquidation report.</p>
+
+    <div class="hero__search">
+      <input id="search" type="text" placeholder="Search tracking numbers, allocations…">
+      <button aria-label="Search">→</button>
+    </div>
+
+    <div class="hero__stats">
+      <div><strong>₱18.4B</strong><span>Tracked this year</span></div>
+      <div><strong>1,342</strong><span>Liquidation reports</span></div>
+      <div><strong>82</strong><span>Provinces covered</span></div>
+    </div>
+
+    <div class="ledger-card">
+      <div class="ledger-card__head"><span class="ledger-card__dot"></span> Live allocation monitor · simulated data</div>
+      <ul class="ledger-feed">
+        <li><div class="row"><span class="loc">Region VIII · Typhoon relief</span><span class="amount">₱4.2M</span></div><time>2 min ago</time></li>
+        <li><div class="row"><span class="loc">Region V · Evacuation centers</span><span class="amount">₱1.8M</span></div><time>11 min ago</time></li>
+        <li><div class="row"><span class="loc">BARMM · Flood response</span><span class="amount">₱6.6M</span></div><time>24 min ago</time></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<main id="main">
+
+  <section class="section" id="reports">
+    <div class="section__head">
+      <p class="eyebrow">Reports</p>
+      <h2>Where the money went</h2>
+      <p class="section__lede">Audit findings and fund utilization reports, filterable by disaster type.</p>
+    </div>
+
+    <div class="filter-row" id="reports-filter-row">
+      <button class="filter-chip is-active" data-filter="all">All reports</button>
+      <button class="filter-chip" data-filter="typhoon">Typhoon</button>
+      <button class="filter-chip" data-filter="earthquake">Earthquake</button>
+      <button class="filter-chip" data-filter="flood">Flood</button>
+    </div>
+
+    <div class="card-grid" id="reports-grid">
+      <article class="card" data-category="typhoon">
+        <div class="card__media">
+          <img src="https://picsum.photos/seed/typhoon-odette/600/338" alt="Relief goods being distributed after Typhoon Odette" loading="lazy">
+          <span class="card__stamp">Filed</span>
+        </div>
+        <div class="card__body">
+          <p class="card__kicker">Audit finding</p>
+          <h3>Typhoon Odette relief disbursement</h3>
+          <p>Utilization review of quick-response funds released to Region VIII local government units.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:96%"></div></div>
+            <span>96% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>Region VIII</span><a href="#">View report →</a></div>
+        </div>
+      </article>
+      <article class="card" data-category="earthquake">
+        <div class="card__media">
+          <img src="https://picsum.photos/seed/abra-earthquake/600/338" alt="Temporary shelter units after the Abra earthquake" loading="lazy">
+          <span class="card__stamp">Filed</span>
+        </div>
+        <div class="card__body">
+          <p class="card__kicker">Audit finding</p>
+          <h3>Abra earthquake shelter assistance</h3>
+          <p>Review of emergency shelter assistance payouts following the 2022 Abra earthquake.</p>
+          <div class="modern-card__progress">
+            <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:88%"></div></div>
+            <span>88% <em>liquidated</em></span>
+          </div>
+          <div class="modern-card__foot"><span>CAR</span><a href="#">View report →</a></div>
+        </div>
+      </article>
+    </div>
+
+    <button class="btn btn--outline btn--block see-more" id="reports-see-more" type="button" aria-haspopup="dialog" aria-controls="reports-modal">See more reports</button>
+  </section>
+
+  <!-- Floating "more reports" panel — opens over the page, modernized card style -->
+  <div class="modal-overlay" id="reports-modal-overlay">
+    <div class="modal-panel" id="reports-modal" role="dialog" aria-modal="true" aria-labelledby="reports-modal-title">
+      <div class="modal-panel__handle" aria-hidden="true"></div>
+      <div class="modal-panel__head">
+        <h3 id="reports-modal-title">More reports</h3>
+        <button class="modal-panel__close" id="reports-modal-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-panel__body">
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/marikina-flood/600/338" alt="Flooded riverside relief distribution in Marikina" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Flood</span>
+            </div>
+            <h4>Marikina River flood relief</h4>
+            <p>Relief good distribution and cash assistance following sustained monsoon flooding.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:91%"></div></div>
+              <span>91% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>NCR</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="earthquake">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/davao-earthquake/600/338" alt="Temporary medical assistance tent in Davao del Sur" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Earthquake</span>
+            </div>
+            <h4>Davao del Sur earthquake response</h4>
+            <p>Quick-response fund releases for temporary shelter and medical assistance.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:80%"></div></div>
+              <span>80% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region XI</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="typhoon">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/kristine-farm/600/338" alt="Farm input handover after Typhoon Kristine" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Typhoon</span>
+            </div>
+            <h4>Typhoon Kristine agricultural aid</h4>
+            <p>Cash-for-work and farm input assistance across flood-hit municipalities.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:67%"></div></div>
+              <span>67% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region V</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/pampanga-dredging/600/338" alt="Dredging works along the Pampanga river basin" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Flood</span>
+            </div>
+            <h4>Pampanga River basin dredging fund</h4>
+            <p>Utilization review of dredging and dike repair allocations.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:58%"></div></div>
+              <span>58% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region III</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="flood">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/cagayan-flood/600/338" alt="Flood control infrastructure in Cagayan Valley" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Flood</span>
+            </div>
+            <h4>Cagayan Valley flood control funds</h4>
+            <p>Tracing calamity fund releases for flood mitigation infrastructure and relief goods.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:74%"></div></div>
+              <span>74% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region II</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+
+        <article class="modern-card" data-category="earthquake">
+          <div class="modern-card__media">
+            <img src="https://picsum.photos/seed/batangas-evacuation/600/338" alt="Evacuation center for Batangas volcanic activity" loading="lazy">
+            <span class="modern-card__stamp">Filed</span>
+          </div>
+          <div class="modern-card__body">
+            <div class="modern-card__top">
+              <span class="modern-card__tag">Earthquake</span>
+            </div>
+            <h4>Batangas volcanic evacuation aid</h4>
+            <p>Utilization review of evacuation and relief assistance for displaced households.</p>
+            <div class="modern-card__progress">
+              <div class="modern-card__progress-track"><div class="modern-card__progress-fill" style="width:83%"></div></div>
+              <span>83% <em>liquidated</em></span>
+            </div>
+            <div class="modern-card__foot"><span>Region IV-A</span><a href="#">View report →</a></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+ <section class="section section--tinted" id="library" data-nav-theme="tinted">
+    <div class="section__head section__head--center">
+      <p class="eyebrow">Documentation library</p>
+      <h2>Field records, on the record.</h2>
+      <p class="section__lede">Visual documentation of Commission on Audit's disaster response audits, field operations, and rehabilitation assessments — ensuring transparency and fiscal accountability where it matters most.</p>
+    </div>
+
+    <div class="filter-row" id="library-filter-row">
+      <button class="filter-chip is-active" type="button" data-filter="all">All</button>
+      <button class="filter-chip" type="button" data-filter="tacloban">Tacloban</button>
+      <button class="filter-chip" type="button" data-filter="briefing">Briefing</button>
+      <button class="filter-chip" type="button" data-filter="gacpa">GACPA</button>
+      <button class="filter-chip" type="button" data-filter="relief">Relief</button>
+    </div>
+
+    <div class="dome-wrap dome-wrap--teaser" aria-label="Rotating preview of the documentation library — drag to look around">
+      <div class="dome-gallery" id="library-dome-teaser" data-dome-gallery data-fit="0.55" data-min-radius="420" data-segments="18" data-idle-delay="2200"></div>
+      <p class="dome-hint">Drag to look around</p>
+    </div>
+
+    <div class="section__more">
+      <button class="btn btn--outline" type="button" id="library-gallery-trigger" onclick="document.getElementById('modal-library-gallery').showModal()">View full gallery</button>
+      
+    </div>
+
+    <dialog id="modal-library-gallery" class="modal modal--wide" onclick="if(event.target===this){this.close()}">
+      <div class="modal__panel modal__panel--wide">
+        <button class="modal__close" onclick="document.getElementById('modal-library-gallery').close()" aria-label="Close">&#10005;</button>
+        <p class="card__kicker">Documentation library</p>
+        <h3>Full photo gallery</h3>
+
+        <div class="gallery-view-toggle" role="group" aria-label="Gallery view">
+          <button type="button" class="view-toggle-btn is-active" data-view="dome">Immersive view</button>
+          <button type="button" class="view-toggle-btn" data-view="grid">Grid view</button>
+        </div>
+
+        <div class="dome-wrap dome-wrap--full" id="library-dome-full-wrap" aria-label="Immersive rotating gallery — drag to look around, click a photo to view it larger">
+          <div class="dome-gallery" id="library-dome-full" data-dome-gallery data-fit="0.62" data-min-radius="560" data-segments="20" data-idle-delay="3200"></div>
+          <p class="dome-hint">Drag to look around · Click a photo to enlarge</p>
+        </div>
+
+        <div class="card-grid card-grid--gallery is-hidden" id="library-grid-fallback">
+          <figure class="gallery-card"><img src="Resources/1.jpg" alt="Commissioner Mendoza at DRRM Seminar" loading="lazy"><figcaption><p class="card__kicker">DRRM Seminar</p><h4>Commissioner Mendoza @ DRRM Seminar during GACPA Convention</h4><time>May 24, 2014</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/2.jpg" alt="Relief operations for typhoon Yolanda victims" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Relief Operations for the victims of typhoon Yolanda</h4><time>Nov 8, 2013</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/3.jpg" alt="Briefing for COA auditors" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Briefing for COA Auditors of about DRR</h4><time>Nov 20, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/4.jpg" alt="Post-Yolanda rehabilitation site visit" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Post-Yolanda Rehabilitation Site Visit</h4><time>Jan 15, 2015</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/5.jpg" alt="Joint disaster simulation exercise" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Joint Disaster Simulation Exercise</h4><time>Mar 3, 2016</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/6.jpg" alt="Distribution of relief packs in Region VIII" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Distribution of Relief Packs in Region VIII</h4><time>Aug 19, 2016</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/7.jpg" alt="GACPA national convention highlights" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>GACPA National Convention Highlights</h4><time>May 22, 2017</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/8.jpg" alt="Auditor's briefing on calamity fund utilization" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Auditor's Briefing on Calamity Fund Utilization</h4><time>Feb 9, 2018</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/9.jpg" alt="Field validation of evacuation centers" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Field Validation of Evacuation Centers</h4><time>Jul 14, 2018</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/10.jpg" alt="Typhoon Yolanda memorial program" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Typhoon Yolanda Memorial Program</h4><time>Nov 8, 2018</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/11.jpg" alt="Cash-for-work program monitoring visit" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Cash-for-Work Program Monitoring Visit</h4><time>Apr 2, 2019</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/12.jpg" alt="Local DRRM officers training workshop" loading="lazy"><figcaption><p class="card__kicker">DRRM Seminar</p><h4>Local DRRM Officers Training Workshop</h4><time>Jun 27, 2019</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/13.jpg" alt="National disaster response drill" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>National Disaster Response Drill</h4><time>Sep 5, 2019</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/14.jpg" alt="Flood relief goods inventory check" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Flood Relief Goods Inventory Check</h4><time>Jan 20, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/15.jpg" alt="Special audit team deployment briefing" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Special Audit Team Deployment Briefing</h4><time>May 11, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/16.jpg" alt="Post-disaster needs assessment briefing" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Post-Disaster Needs Assessment Briefing</h4><time>Aug 3, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/17.jpg" alt="Regional GACPA chapter meeting" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>Regional GACPA Chapter Meeting</h4><time>Oct 14, 2020</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/18.jpg" alt="Site inspection of flood control projects" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Site Inspection of Flood Control Projects</h4><time>Feb 8, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/19.jpg" alt="Tacloban resettlement site audit" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Tacloban Resettlement Site Audit</h4><time>Apr 25, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/20.jpg" alt="Family assistance package distribution" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Family Assistance Package Distribution</h4><time>Jun 30, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/21.jpg" alt="Inter-agency coordination meeting" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Inter-Agency Coordination Meeting</h4><time>Sep 16, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/22.jpg" alt="Relief goods warehousing inspection" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Relief Goods Warehousing Inspection</h4><time>Dec 1, 2021</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/23.jpg" alt="Auditors' roundtable on fund utilization" loading="lazy"><figcaption><p class="card__kicker">COA/DRR</p><h4>Auditors' Roundtable on Fund Utilization</h4><time>Mar 9, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/24.jpg" alt="Calamity fund orientation for new auditors" loading="lazy"><figcaption><p class="card__kicker">Briefing</p><h4>Calamity Fund Orientation for New Auditors</h4><time>Jun 21, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/25.jpg" alt="GACPA regional convention recap" loading="lazy"><figcaption><p class="card__kicker">GACPA</p><h4>GACPA Regional Convention Recap</h4><time>Sep 2, 2022</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/26.jpg" alt="Evacuation center readiness check" loading="lazy"><figcaption><p class="card__kicker">Field Ops</p><h4>Evacuation Center Readiness Check</h4><time>Jan 18, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/27.jpg" alt="Ongoing rehabilitation projects review" loading="lazy"><figcaption><p class="card__kicker">Tacloban</p><h4>Ongoing Rehabilitation Projects Review</h4><time>Apr 7, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/28.jpg" alt="Emergency shelter assistance monitoring" loading="lazy"><figcaption><p class="card__kicker">DSWD</p><h4>Emergency Shelter Assistance Monitoring</h4><time>Jul 22, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/29.jpg" alt="Disaster risk reduction summit" loading="lazy"><figcaption><p class="card__kicker">NDRRMC</p><h4>Disaster Risk Reduction Summit</h4><time>Oct 30, 2023</time></figcaption></figure>
+          <figure class="gallery-card"><img src="Resources/30.jpg" alt="Year-end relief operations report" loading="lazy"><figcaption><p class="card__kicker">Relief</p><h4>Year-End Relief Operations Report</h4><time>Dec 15, 2023</time></figcaption></figure>
+        </div>
+      </div>
+    </dialog>
+  </section>
+
+
+  <section class="section section--tinted" id="news">
+    <div class="section__head">
+      <p class="eyebrow">Articles &amp; briefings</p>
+      <h2>Latest findings</h2>
+    </div>
+    <div class="news-grid">
+      <article class="news-card">
+        <div class="news-card__thumb"><span class="news-card__tag">Briefing</span></div>
+        <div class="news-card__body">
+          <h3>COA flags delayed liquidation in three provinces</h3>
+          <p>A summary of the latest quarterly compliance briefing on calamity fund reporting.</p>
+          <div class="news-card__meta">
+            <span>Aug 2026</span>
+            <a class="news-card__cta" href="#">Read more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+      <article class="news-card">
+        <div class="news-card__thumb"><span class="news-card__tag">Explainer</span></div>
+        <div class="news-card__body">
+          <h3>How a calamity fund release is audited</h3>
+          <p>A walkthrough of the liquidation process, from barangay request to national sign-off.</p>
+          <div class="news-card__meta">
+            <span>Jul 2026</span>
+            <a class="news-card__cta" href="#">Read more <span aria-hidden="true">→</span></a>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section faq-section" id="faq">
+    <div class="section__head">
+      <p class="eyebrow">FAQs</p>
+      <h2>How can we help you?</h2>
+      <p class="section__lede">Can't find what you're looking for? Reach the COA Public Information Office through the contact details in the footer.</p>
+    </div>
+    <div class="faq-list">
+      <details open>
+        <summary>What is the "Disaster Audit" site by the Commission on Audit, and what should I know about its purpose?</summary>
+        <p>The Disaster Audit site is an official Commission on Audit (COA) portal that publishes audit findings, summaries, and related documentation on disaster fund utilization.</p>
+      </details>
+      <details>
+        <summary>Who should I contact for media, research, or official inquiries?</summary>
+        <p>Reach the COA Public Information Office through the email, phone number, and address listed in the footer below.</p>
+      </details>
+      <details>
+        <summary>How is personal or sensitive information handled on the site?</summary>
+        <p>The site publishes only official audit findings and fund allocation records — it does not collect or display personal data about individual beneficiaries.</p>
+      </details>
+      <details>
+        <summary>How do I request additional information or report a records request?</summary>
+        <p>Send a request to the Public Information Office by email or phone, listed in the footer, and include the specific report or region you're asking about.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer" id="contact">
+  <a href="#home" class="footer-brand__mark">
+    <img src="images/logo.png" alt="Commission on Audit logo">
+    <span class="footer-brand__name"><strong>Disaster Audit</strong><em>Commission on Audit</em></span>
+  </a>
+  <p>A public ledger for calamity funds, maintained by the Commission on Audit — tracing disaster response spending from the national treasury down to the barangay.</p>
+  <span class="footer-seal">Republic of the Philippines</span>
+
+  <div class="footer-cols">
+    <nav class="footer-col" aria-label="Site sections">
+      <h4>Explore</h4>
+      <ul>
+        <li><a href="#reports">Reports</a></li>
+        <li><a href="#library">Documentation library</a></li>
+        <li><a href="#news">Articles &amp; briefings</a></li>
+        <li><a href="#map">Risk map</a></li>
+        <li><a href="#faq">FAQs</a></li>
+      </ul>
+    </nav>
+    <nav class="footer-col" aria-label="Partner agencies and resources">
+      <h4>Resources</h4>
+      <ul>
+        <li><a href="https://www.foi.gov.ph/" target="_blank" rel="noopener">FOI portal</a></li>
+        <li><a href="https://ndrrmc.gov.ph" target="_blank" rel="noopener">NDRRMC</a></li>
+        <li><a href="https://dilg.gov.ph" target="_blank" rel="noopener">DILG</a></li>
+        <li><a href="https://dswd.gov.ph" target="_blank" rel="noopener">DSWD</a></li>
+      </ul>
+    </nav>
+    <div class="footer-col">
+      <h4>Public Information Office</h4>
+      <address>
+        <p>Commission on Audit Central Office<br>Commonwealth Avenue, Quezon City, Philippines</p>
+        <p><a href="mailto:pio@coa.gov.ph">pio@coa.gov.ph</a></p>
+        <p><a href="tel:+6329317592">(02) 8931-7592</a></p>
+      </address>
+    </div>
+  </div>
+
+  <div class="footer-meta">
+    <p>&copy; 2026 Commission on Audit, Republic of the Philippines. All rights reserved.</p>
+    <div class="footer-legal">
+      <a href="#">Privacy notice</a>
+      <a href="#">Data Privacy Act (RA 10173)</a>
+      <a href="#">Terms of use</a>
+    </div>
+    <div class="footer-language-selector">
+      <select id="language-select" aria-label="Select language">
+        <option value="en">English</option>
+        <option value="fil">Filipino</option>
+      </select>
+    </div>
+  </div>
+</footer>
+
+<!-- Chat support widget — launcher + slide-up panel, matching the
+     "DisasterAudit Support" mockup -->
+<button class="chat-launcher" id="chatLauncher" type="button" aria-haspopup="dialog" aria-controls="chatPanel" aria-expanded="false" aria-label="Open chat support">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+</button>
+
+<div class="chat-panel" id="chatPanel" role="dialog" aria-modal="true" aria-labelledby="chatPanelTitle" aria-hidden="true">
+  <div class="chat-panel__head">
+    <span class="chat-panel__avatar"></span>
+    <div class="chat-panel__title">
+      <strong id="chatPanelTitle">DisasterAudit Support</strong>
+      <span><i></i>Usually replies in minutes</span>
+    </div>
+    <button class="chat-panel__close" id="chatPanelClose" type="button" aria-label="Close chat">✕</button>
+  </div>
+
+  <div class="chat-panel__body" id="chatPanelBody">
+    <div class="chat-msg chat-msg--bot">
+      <p>Hi! I'm here to help you look into calamity fund reports. What would you like to check?</p>
+      <time>12:01 PM</time>
+    </div>
+    <div class="chat-msg chat-msg--user">
+      <p>Paano ko po makikita ang allocation ng Region V calamity fund?</p>
+      <time>12:02 PM</time>
+    </div>
+    <div class="chat-msg chat-msg--bot">
+      <p>You can check it under the Reports section — it lists allocations by region along with the audit findings for each release.</p>
+      <div class="chat-msg__actions">
+        <a href="#reports" class="chat-quick-btn" data-close-chat>View reports</a>
+        <a href="#contact" class="chat-quick-btn" data-close-chat>Contact PIO</a>
+      </div>
+    </div>
+  </div>
+
+  <form class="chat-panel__composer" id="chatComposer">
+    <input type="text" id="chatInput" placeholder="Type your question…" autocomplete="off">
+    <button type="submit" aria-label="Send message">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </form>
+</div>
+
+<script>
+  // Chat support widget — launcher toggle, plus a lightweight canned reply
+  // so typing something back actually does *something*, no backend needed.
+  (function () {
+    var launcher = document.getElementById('chatLauncher');
+    var panel = document.getElementById('chatPanel');
+    var closeBtn = document.getElementById('chatPanelClose');
+    var body = document.getElementById('chatPanelBody');
+    var form = document.getElementById('chatComposer');
+    var input = document.getElementById('chatInput');
+    if (!launcher || !panel || !closeBtn || !form || !input) return;
+
+    function openChat() {
+      panel.classList.add('is-open');
+      launcher.classList.add('is-open');
+      launcher.setAttribute('aria-expanded', 'true');
+      panel.setAttribute('aria-hidden', 'false');
+    }
+    function closeChat() {
+      panel.classList.remove('is-open');
+      launcher.classList.remove('is-open');
+      launcher.setAttribute('aria-expanded', 'false');
+      panel.setAttribute('aria-hidden', 'true');
+    }
+
+    launcher.addEventListener('click', function () {
+      panel.classList.contains('is-open') ? closeChat() : openChat();
+    });
+    closeBtn.addEventListener('click', closeChat);
+
+    panel.querySelectorAll('[data-close-chat]').forEach(function (link) {
+      link.addEventListener('click', closeChat);
+    });
+
+    function addMessage(text, who) {
+      var msg = document.createElement('div');
+      msg.className = 'chat-msg chat-msg--' + who;
+      var p = document.createElement('p');
+      p.textContent = text;
+      var time = document.createElement('time');
+      var now = new Date();
+      var h = now.getHours() % 12 || 12;
+      var m = ('0' + now.getMinutes()).slice(-2);
+      time.textContent = h + ':' + m + ' ' + (now.getHours() >= 12 ? 'PM' : 'AM');
+      msg.appendChild(p);
+      msg.appendChild(time);
+      body.appendChild(msg);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      input.value = '';
+      setTimeout(function () {
+        addMessage('Thanks — for specific figures, please check the Reports section, or reach the Public Information Office in the footer for anything not covered there.', 'bot');
+      }, 500);
+    });
+  })();
+</script>
+
+<script>
+  // Mobile nav toggle — plain JS, no dependencies
+  (function () {
+    var toggle = document.getElementById('navToggle');
+    var nav = document.getElementById('mobileNav');
+    if (!toggle || !nav) return;
+    toggle.addEventListener('click', function () {
+      var open = nav.classList.toggle('open');
+      toggle.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      nav.setAttribute('aria-hidden', open ? 'false' : 'true');
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    });
+    nav.querySelectorAll('a').forEach(function (a) {
+      a.addEventListener('click', function () {
+        nav.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        nav.setAttribute('aria-hidden', 'true');
+      });
+    });
+  })();
+
+  // Filter chips — same pattern used for both the reports and the
+  // documentation library rows: click a chip, show only matching items.
+  function setupFilter(rowId, containerId, itemSelector) {
+    var row = document.getElementById(rowId);
+    var container = document.getElementById(containerId);
+    if (!row || !container) return;
+    var chips = Array.prototype.slice.call(row.querySelectorAll('.filter-chip'));
+    var items = Array.prototype.slice.call(container.querySelectorAll(itemSelector));
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        chips.forEach(function (c) { c.classList.remove('is-active'); });
+        chip.classList.add('is-active');
+        var filter = chip.getAttribute('data-filter');
+        items.forEach(function (item) {
+          var match = filter === 'all' || item.getAttribute('data-category') === filter;
+          item.style.display = match ? '' : 'none';
+        });
+      });
+    });
+  }
+  setupFilter('reports-filter-row', 'reports-grid', '.card');
+
+  // Library filter panel — pick a place (region) and/or event (disaster
+  // type), Apply narrows the strip to items matching both (when both are
+  // set); Clear resets everything back to showing all of them.
+  (function () {
+    var openBtn = document.getElementById('libraryFilterBtn');
+    var overlay = document.getElementById('library-filter-overlay');
+    var closeBtn = document.getElementById('libraryFilterClose');
+    var applyBtn = document.getElementById('libraryFilterApply');
+    var clearBtn = document.getElementById('libraryFilterClear');
+    var label = document.getElementById('libraryFilterLabel');
+    var countBadge = document.getElementById('libraryFilterCount');
+    var strip = document.getElementById('library-strip');
+    if (!openBtn || !overlay || !strip) return;
+
+    var pills = Array.prototype.slice.call(overlay.querySelectorAll('.pill'));
+    var items = Array.prototype.slice.call(strip.querySelectorAll('figure'));
+    var selected = { category: null, region: null };
+
+    pills.forEach(function (pill) {
+      pill.addEventListener('click', function () {
+        var group = pill.closest('.filter-pills').getAttribute('data-filter-type');
+        var value = pill.getAttribute('data-value');
+        var alreadyActive = pill.classList.contains('is-active');
+        overlay.querySelectorAll('.filter-pills[data-filter-type="' + group + '"] .pill').forEach(function (p) {
+          p.classList.remove('is-active');
+        });
+        if (alreadyActive) {
+          selected[group] = null;
+        } else {
+          pill.classList.add('is-active');
+          selected[group] = value;
+        }
+      });
+    });
+
+    function applyFilters() {
+      items.forEach(function (item) {
+        var matchCategory = !selected.category || item.getAttribute('data-category') === selected.category;
+        var matchRegion = !selected.region || item.getAttribute('data-region') === selected.region;
+        item.style.display = (matchCategory && matchRegion) ? '' : 'none';
+      });
+      var count = (selected.category ? 1 : 0) + (selected.region ? 1 : 0);
+      if (count > 0) {
+        label.textContent = 'Filter by place or event';
+        countBadge.textContent = String(count);
+        countBadge.hidden = false;
+      } else {
+        label.textContent = 'Filter by place or event';
+        countBadge.hidden = true;
+      }
+    }
+
+    function openPanel() {
+      overlay.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      if (closeBtn) closeBtn.focus();
+    }
+    function closePanel() {
+      overlay.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openPanel);
+    if (closeBtn) closeBtn.addEventListener('click', closePanel);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closePanel();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePanel();
+    });
+
+    if (applyBtn) applyBtn.addEventListener('click', function () {
+      applyFilters();
+      closePanel();
+    });
+    if (clearBtn) clearBtn.addEventListener('click', function () {
+      selected.category = null;
+      selected.region = null;
+      pills.forEach(function (p) { p.classList.remove('is-active'); });
+      applyFilters();
+    });
+  })();
+
+  // "See more" floating panels — same bottom-sheet pattern for both the
+  // reports panel and the documentation library panel. Purely class-driven
+  // (CSS handles the show/hide + animation), so it can't get stuck
+  // regardless of the device's motion settings or transition timing.
+  function setupModal(openBtnId, overlayId, closeBtnId) {
+    var openBtn = document.getElementById(openBtnId);
+    var overlay = document.getElementById(overlayId);
+    var closeBtn = document.getElementById(closeBtnId);
+    if (!openBtn || !overlay || !closeBtn) return;
+
+    function openModal() {
+      overlay.classList.add('is-open');
+      document.body.classList.add('modal-open');
+      closeBtn.focus();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('is-open');
+      document.body.classList.remove('modal-open');
+      openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeModal();
+    });
+  }
+  setupModal('reports-see-more', 'reports-modal-overlay', 'reports-modal-close');
+  setupModal('library-see-more', 'library-modal-overlay', 'library-modal-close');
+
+
+  /* =====================================================================
+   DOME GALLERY (vanilla JS)
+   Turns any set of `.gallery-card` figures into a draggable, inertial,
+   auto-rotating 3D photo sphere with a cinematic enlarge/close animation.
+   No build step, no framework — works alongside the site's existing
+   plain <script> files. Uses GSAP (already loaded on the page) for the
+   showcase moments; everything else is dependency-free.
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  var REDUCE_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var HAS_GSAP = typeof window.gsap !== 'undefined';
+
+  function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+  function normalizeAngle(d) { return ((d % 360) + 360) % 360; }
+  function wrapAngleSigned(deg) {
+    var a = (((deg + 180) % 360) + 360) % 360;
+    return a - 180;
+  }
+
+  /* ---- pull image + caption data straight from existing markup ---- */
+  function readImagesFrom(selector) {
+    var nodes = Array.prototype.slice.call(document.querySelectorAll(selector));
+    return nodes.map(function (fig) {
+      var img = fig.querySelector('img');
+      if (!img) return null;
+      var kicker = fig.querySelector('.card__kicker');
+      var title = fig.querySelector('h4');
+      var time = fig.querySelector('time');
+      return {
+        src: img.getAttribute('src') || '',
+        alt: img.getAttribute('alt') || '',
+        kicker: kicker ? kicker.textContent.trim() : '',
+        title: title ? title.textContent.trim() : '',
+        date: time ? time.textContent.trim() : ''
+      };
+    }).filter(function (d) { return d && d.src; });
+  }
+
+  /* ---- build the coordinate grid + assign images cyclically so every
+     image in the source set is used (repeating only once the pool is
+     exhausted) — nothing gets left out. ---- */
+  function buildItems(pool, segments) {
+    var xCols = [];
+    for (var i = 0; i < segments; i++) xCols.push(-(segments - 1) + i * 2);
+    var evenYs = [-4, -2, 0, 2, 4];
+    var oddYs = [-3, -1, 1, 3, 5];
+
+    var coords = [];
+    xCols.forEach(function (x, c) {
+      var ys = c % 2 === 0 ? evenYs : oddYs;
+      ys.forEach(function (y) { coords.push({ x: x, y: y, sizeX: 2, sizeY: 2 }); });
+    });
+
+    if (!pool.length) return coords.map(function (c) { return Object.assign({}, c, { src: '', alt: '' }); });
+
+    var used = coords.map(function (_, i) { return pool[i % pool.length]; });
+    for (var k = 1; k < used.length; k++) {
+      if (used[k].src === used[k - 1].src) {
+        for (var j = k + 1; j < used.length; j++) {
+          if (used[j].src !== used[k].src) {
+            var tmp = used[k]; used[k] = used[j]; used[j] = tmp;
+            break;
+          }
+        }
+      }
+    }
+    return coords.map(function (c, i) { return Object.assign({}, c, used[i]); });
+  }
+
+  function baseRotation(offsetX, offsetY, sizeX, sizeY, segments) {
+    var unit = 360 / segments / 2;
+    return {
+      rotateY: unit * (offsetX + (sizeX - 1) / 2),
+      rotateX: unit * (offsetY - (sizeY - 1) / 2)
+    };
+  }
+
+  /* ===================================================================
+     DomeGallery instance
+     =================================================================== */
+  function DomeGallery(root, images, opts) {
+    this.root = root;
+    this.images = images;
+    this.opts = Object.assign({
+      fit: 0.55,
+      minRadius: 460,
+      maxRadius: Infinity,
+      segments: 20,
+      maxVerticalRotationDeg: 8,
+      dragSensitivity: 22,
+      dragDampening: 2,
+      autoRotateSpeed: 0.035, // deg per frame
+      idleDelay: 2600
+    }, opts || {});
+
+    this.rotation = { x: 0, y: 0 };
+    this.dragging = false;
+    this.moved = false;
+    this.inertiaRAF = null;
+    this.autoRAF = null;
+    this.lastInteraction = 0;
+    this.focusedEl = null;
+
+    this._buildDOM();
+    this._buildTiles();
+    this._observeResize();
+    this._bindPointer();
+    if (!REDUCE_MOTION) this._startAutoRotate();
+    this._revealTiles();
+  }
+
+  DomeGallery.prototype._buildDOM = function () {
+    var root = this.root;
+    root.innerHTML =
+      '<main class="dome-gallery__main">' +
+      '<div class="dome-gallery__stage"><div class="dome-gallery__sphere"></div></div>' +
+      '<div class="dome-gallery__overlay"></div>' +
+      '<div class="dome-gallery__overlay--blur"></div>' +
+      '<div class="dome-gallery__edge dome-gallery__edge--top"></div>' +
+      '<div class="dome-gallery__edge dome-gallery__edge--bottom"></div>' +
+      '</main>';
+
+    this.main = root.querySelector('.dome-gallery__main');
+    this.stage = root.querySelector('.dome-gallery__stage');
+    this.sphere = root.querySelector('.dome-gallery__sphere');
+
+    root.style.setProperty('--segments-x', this.opts.segments);
+    root.style.setProperty('--segments-y', this.opts.segments);
+  };
+
+  DomeGallery.prototype._buildTiles = function () {
+    var items = buildItems(this.images, this.opts.segments);
+    var frag = document.createDocumentFragment();
+    var self = this;
+
+    items.forEach(function (it) {
+      if (!it.src) return;
+      var item = document.createElement('div');
+      item.className = 'dome-item';
+      item.style.setProperty('--offset-x', it.x);
+      item.style.setProperty('--offset-y', it.y);
+      item.style.setProperty('--item-size-x', it.sizeX);
+      item.style.setProperty('--item-size-y', it.sizeY);
+      item.dataset.offsetX = it.x;
+      item.dataset.offsetY = it.y;
+      item.dataset.sizeX = it.sizeX;
+      item.dataset.sizeY = it.sizeY;
+
+      var tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'dome-item__tile';
+      tile.setAttribute('aria-label', it.alt || it.title || 'Open image');
+      tile.dataset.kicker = it.kicker || '';
+      tile.dataset.title = it.title || '';
+      tile.dataset.date = it.date || '';
+
+      var img = document.createElement('img');
+      img.src = it.src;
+      img.alt = it.alt || '';
+      img.loading = 'lazy';
+      img.draggable = false;
+      tile.appendChild(img);
+
+      tile.addEventListener('click', function (e) {
+        if (self.moved || self.dragging) return;
+        self._openTile(tile, item);
+      });
+
+      item.appendChild(tile);
+      frag.appendChild(item);
+    });
+
+    this.sphere.appendChild(frag);
+    this._applyTransform(0, 0);
+  };
+
+  DomeGallery.prototype._revealTiles = function () {
+    var tiles = Array.prototype.slice.call(this.sphere.querySelectorAll('.dome-item'));
+    if (REDUCE_MOTION) { tiles.forEach(function (t) { t.classList.add('is-visible'); }); return; }
+    // gentle stagger so the sphere feels like it assembles itself
+    tiles.forEach(function (t, i) {
+      setTimeout(function () { t.classList.add('is-visible'); }, 8 * (i % 40));
+    });
+  };
+
+  DomeGallery.prototype._applyTransform = function (x, y) {
+    this.sphere.style.transform = 'translateZ(calc(var(--radius) * -1)) rotateX(' + x + 'deg) rotateY(' + y + 'deg)';
+  };
+
+  DomeGallery.prototype.setImages = function (images) {
+    var self = this;
+    this.images = images && images.length ? images : this.images;
+    // close any open enlarge view first
+    if (this.focusedEl) this._closeTile(this.focusedEl);
+    this._stopInertia();
+
+    var oldTiles = Array.prototype.slice.call(this.sphere.querySelectorAll('.dome-item'));
+    var rebuild = function () {
+      self.sphere.innerHTML = '';
+      self._buildTiles();
+      self._revealTiles();
+    };
+    if (oldTiles.length && !REDUCE_MOTION) {
+      oldTiles.forEach(function (t) { t.classList.remove('is-visible'); });
+      setTimeout(rebuild, 260);
+    } else {
+      rebuild();
+    }
+  };
+
+  DomeGallery.prototype._observeResize = function () {
+    var self = this;
+    var ro = new ResizeObserver(function (entries) {
+      var cr = entries[0].contentRect;
+      var w = Math.max(1, cr.width), h = Math.max(1, cr.height);
+      if (w < 10 || h < 10) return; // not visible yet (e.g. closed <dialog>)
+      var basis = w >= h * 1.3 ? w : Math.min(w, h);
+      var radius = clamp(basis * self.opts.fit, self.opts.minRadius, self.opts.maxRadius);
+      radius = Math.min(radius, h * 1.4);
+      self.root.style.setProperty('--radius', Math.round(radius) + 'px');
+    });
+    ro.observe(this.root);
+    this._ro = ro;
+  };
+
+  DomeGallery.prototype.refresh = function () {
+    var r = this.root.getBoundingClientRect();
+    if (r.width > 10) {
+      var basis = r.width >= r.height * 1.3 ? r.width : Math.min(r.width, r.height);
+      var radius = clamp(basis * this.opts.fit, this.opts.minRadius, this.opts.maxRadius);
+      radius = Math.min(radius, r.height * 1.4);
+      this.root.style.setProperty('--radius', Math.round(radius) + 'px');
+    }
+  };
+
+  /* ---------------- drag + inertia + idle auto-rotate ---------------- */
+  DomeGallery.prototype._markInteraction = function () {
+    this.lastInteraction = performance.now();
+    this.root.closest('.dome-wrap') && this.root.closest('.dome-wrap').classList.add('is-interacted');
+  };
+
+  DomeGallery.prototype._stopAutoRotate = function () {
+    if (this.autoRAF) { cancelAnimationFrame(this.autoRAF); this.autoRAF = null; }
+  };
+
+  DomeGallery.prototype._startAutoRotate = function () {
+    var self = this;
+    this._stopAutoRotate();
+    var step = function () {
+      var idleFor = performance.now() - self.lastInteraction;
+      if (!self.dragging && !self.focusedEl && idleFor > self.opts.idleDelay) {
+        var nextY = wrapAngleSigned(self.rotation.y + self.opts.autoRotateSpeed);
+        self.rotation.y = nextY;
+        self._applyTransform(self.rotation.x, nextY);
+      }
+      self.autoRAF = requestAnimationFrame(step);
+    };
+    this.autoRAF = requestAnimationFrame(step);
+  };
+
+  DomeGallery.prototype._stopInertia = function () {
+    if (this.inertiaRAF) { cancelAnimationFrame(this.inertiaRAF); this.inertiaRAF = null; }
+  };
+
+  DomeGallery.prototype._startInertia = function (vx, vy) {
+    var self = this;
+    var MAX_V = 1.4;
+    var vX = clamp(vx, -MAX_V, MAX_V) * 80;
+    var vY = clamp(vy, -MAX_V, MAX_V) * 80;
+    var frames = 0;
+    var d = clamp(this.opts.dragDampening, 0, 1);
+    var frictionMul = 0.94 + 0.055 * d;
+    var stopThreshold = 0.015 - 0.01 * d;
+    var maxFrames = Math.round(90 + 270 * d);
+    this._stopInertia();
+    var step = function () {
+      vX *= frictionMul; vY *= frictionMul;
+      if ((Math.abs(vX) < stopThreshold && Math.abs(vY) < stopThreshold) || ++frames > maxFrames) {
+        self.inertiaRAF = null; return;
+      }
+      var nextX = clamp(self.rotation.x - vY / 200, -self.opts.maxVerticalRotationDeg, self.opts.maxVerticalRotationDeg);
+      var nextY = wrapAngleSigned(self.rotation.y + vX / 200);
+      self.rotation = { x: nextX, y: nextY };
+      self._applyTransform(nextX, nextY);
+      self.inertiaRAF = requestAnimationFrame(step);
+    };
+    this.inertiaRAF = requestAnimationFrame(step);
+  };
+
+  DomeGallery.prototype._bindPointer = function () {
+    var self = this;
+    var startPos = null, startRot = null, pointerId = null;
+
+    this.main.addEventListener('pointerdown', function (e) {
+      if (self.focusedEl) return;
+      self._stopInertia();
+      self._markInteraction();
+      self.dragging = true;
+      self.moved = false;
+      startRot = { x: self.rotation.x, y: self.rotation.y };
+      startPos = { x: e.clientX, y: e.clientY, t: performance.now() };
+      pointerId = e.pointerId;
+      try { self.main.setPointerCapture(pointerId); } catch (err) {}
+    });
+
+    this.main.addEventListener('pointermove', function (e) {
+      if (!self.dragging || !startPos) return;
+      var dx = e.clientX - startPos.x, dy = e.clientY - startPos.y;
+      if (!self.moved && (dx * dx + dy * dy) > 16) self.moved = true;
+      var nextX = clamp(startRot.x - dy / self.opts.dragSensitivity, -self.opts.maxVerticalRotationDeg, self.opts.maxVerticalRotationDeg);
+      var nextY = wrapAngleSigned(startRot.y + dx / self.opts.dragSensitivity);
+      self.rotation = { x: nextX, y: nextY };
+      self._applyTransform(nextX, nextY);
+      var rect = self.root.getBoundingClientRect();
+      self.root.style.setProperty('--spot-x', ((e.clientX - rect.left) / rect.width * 100) + '%');
+      self.root.style.setProperty('--spot-y', ((e.clientY - rect.top) / rect.height * 100) + '%');
+    });
+
+    function end(e) {
+      if (!self.dragging) return;
+      self.dragging = false;
+      self._markInteraction();
+      if (startPos) {
+        var dt = Math.max(1, performance.now() - startPos.t);
+        var dx = (e.clientX != null ? e.clientX : startPos.x) - startPos.x;
+        var dy = (e.clientY != null ? e.clientY : startPos.y) - startPos.y;
+        var vx = clamp((dx / dt) * 16 / self.opts.dragSensitivity, -1.2, 1.2);
+        var vy = clamp((dy / dt) * 16 / self.opts.dragSensitivity, -1.2, 1.2);
+        if (Math.abs(vx) > 0.01 || Math.abs(vy) > 0.01) self._startInertia(vx, vy);
+      }
+      startPos = null;
+      setTimeout(function () { self.moved = false; }, 60);
+    }
+    this.main.addEventListener('pointerup', end);
+    this.main.addEventListener('pointercancel', end);
+    this.main.addEventListener('pointerleave', function () {
+      if (!self.dragging) self.root.style.setProperty('--spot-y', '-50%');
+    });
+  };
+
+  /* ---------------- shared fullscreen lightbox (singleton) ---------------- */
+  var sharedLightbox = null;
+  function getLightbox() {
+    if (sharedLightbox) return sharedLightbox;
+
+    var el = document.createElement('div');
+    el.className = 'dome-lightbox';
+    el.innerHTML =
+      '<div class="dome-lightbox__scrim"></div>' +
+      '<button type="button" class="dome-lightbox__close" aria-label="Close">&#10005;</button>' +
+      '<div class="dome-lightbox__stage">' +
+      '<div class="dome-lightbox__frame"><img alt=""></div>' +
+      '<div class="dome-lightbox__plaque"></div>' +
+      '</div>';
+    document.body.appendChild(el);
+
+    sharedLightbox = {
+      root: el,
+      scrim: el.querySelector('.dome-lightbox__scrim'),
+      closeBtn: el.querySelector('.dome-lightbox__close'),
+      frame: el.querySelector('.dome-lightbox__frame'),
+      img: el.querySelector('.dome-lightbox__frame img'),
+      plaque: el.querySelector('.dome-lightbox__plaque'),
+      onClose: null
+    };
+
+    function triggerClose() { if (sharedLightbox.onClose) sharedLightbox.onClose(); }
+    sharedLightbox.scrim.addEventListener('click', triggerClose);
+    sharedLightbox.closeBtn.addEventListener('click', triggerClose);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && sharedLightbox.root.classList.contains('is-open')) triggerClose();
+    });
+
+    return sharedLightbox;
+  }
+
+  /* ---------------- enlarge / close (viewport FLIP into the shared lightbox) ---------------- */
+  DomeGallery.prototype._openTile = function (tile) {
+    var lb = getLightbox();
+    if (lb.root.classList.contains('is-open') || this.focusedEl) return;
+
+    this.focusedEl = tile;
+    this._markInteraction();
+    document.body.classList.add('dg-scroll-lock');
+
+    var tileRect = tile.getBoundingClientRect();
+    var img = tile.querySelector('img');
+    tile.style.visibility = 'hidden';
+
+    lb.img.src = img.src;
+    lb.img.alt = img.alt || '';
+
+    var kicker = tile.dataset.kicker, title = tile.dataset.title, date = tile.dataset.date;
+    var hasCaption = !!(kicker || title || date);
+    lb.plaque.innerHTML =
+      (kicker ? '<p class="card__kicker">' + kicker + '</p>' : '') +
+      (title ? '<h4>' + title + '</h4>' : '') +
+      (date ? '<time>' + date + '</time>' : '');
+    lb.plaque.style.display = hasCaption ? '' : 'none';
+
+    // size the frame to a large, centered target that preserves the
+    // tile's own aspect ratio, leaving room below for the caption plaque
+    var vw = window.innerWidth, vh = window.innerHeight;
+    var padX = Math.max(24, vw * 0.06);
+    var reserveBelow = hasCaption ? 130 : 40;
+    var maxW = Math.min(vw - padX * 2, 960);
+    var maxH = vh - 140 - reserveBelow;
+    var aspect = tileRect.width / tileRect.height;
+    var targetW = maxW, targetH = maxW / aspect;
+    if (targetH > maxH) { targetH = maxH; targetW = maxH * aspect; }
+
+    lb.frame.style.width = targetW + 'px';
+    lb.frame.style.height = targetH + 'px';
+
+    lb.root.classList.add('is-open');
+
+    var finalRect = lb.frame.getBoundingClientRect();
+    var dx = tileRect.left - finalRect.left;
+    var dy = tileRect.top - finalRect.top;
+    var sx = tileRect.width / finalRect.width;
+    var sy = tileRect.height / finalRect.height;
+
+    var self = this;
+    lb.onClose = function () { self._closeTile(tile); };
+
+    if (HAS_GSAP && !REDUCE_MOTION) {
+      gsap.set(lb.frame, { x: dx, y: dy, scaleX: sx, scaleY: sy, transformOrigin: '0 0' });
+      gsap.to(lb.frame, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.55, ease: 'power3.out' });
+      if (hasCaption) gsap.fromTo(lb.plaque, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, delay: 0.28, ease: 'power2.out' });
+    } else {
+      lb.frame.style.transform = 'none';
+      lb.plaque.style.opacity = '1';
+    }
+  };
+
+  DomeGallery.prototype._closeTile = function (tile) {
+    var lb = getLightbox();
+    var self = this;
+
+    var tileRect = tile.getBoundingClientRect();
+    var frameRect = lb.frame.getBoundingClientRect();
+    var dx = tileRect.left - frameRect.left;
+    var dy = tileRect.top - frameRect.top;
+    var sx = tileRect.width / frameRect.width;
+    var sy = tileRect.height / frameRect.height;
+
+    var finish = function () {
+      lb.root.classList.remove('is-open');
+      lb.img.src = '';
+      lb.frame.style.transform = '';
+      tile.style.visibility = '';
+      self.focusedEl = null;
+      document.body.classList.remove('dg-scroll-lock');
+    };
+
+    if (HAS_GSAP && !REDUCE_MOTION) {
+      gsap.to(lb.plaque, { opacity: 0, duration: 0.15 });
+      gsap.to(lb.frame, { x: dx, y: dy, scaleX: sx, scaleY: sy, duration: 0.4, ease: 'power2.inOut', onComplete: finish });
+    } else {
+      finish();
+    }
+  };
+
+  window.DomeGallery = DomeGallery;
+  window.readDomeImagesFrom = readImagesFrom;
+
+  /* =====================================================================
+     Auto-init: teaser dome + full immersive dome + grid/dome toggle
+     ===================================================================== */
+  document.addEventListener('DOMContentLoaded', function () {
+    var sourceSelector = '#modal-library-gallery .gallery-card';
+    var images = readImagesFrom(sourceSelector);
+    if (!images.length) return;
+
+    var instances = {};
+
+    document.querySelectorAll('[data-dome-gallery]').forEach(function (el) {
+      var opts = {
+        fit: parseFloat(el.getAttribute('data-fit')) || 0.55,
+        minRadius: parseFloat(el.getAttribute('data-min-radius')) || 460,
+        segments: parseInt(el.getAttribute('data-segments'), 10) || 20,
+        idleDelay: parseFloat(el.getAttribute('data-idle-delay')) || 2600
+      };
+      instances[el.id] = new DomeGallery(el, images, opts);
+    });
+
+    // Re-measure the full/modal dome once its <dialog> actually opens
+    // (a closed dialog has zero size, so ResizeObserver can't size it yet).
+    var trigger = document.getElementById('library-gallery-trigger');
+    var fullDome = instances['library-dome-full'];
+    if (trigger && fullDome) {
+      trigger.addEventListener('click', function () {
+        requestAnimationFrame(function () { fullDome.refresh(); });
+        setTimeout(function () { fullDome.refresh(); }, 120);
+      });
+    }
+
+    // Grid <-> Dome toggle inside the full gallery modal
+    var toggleBtns = document.querySelectorAll('.gallery-view-toggle .view-toggle-btn');
+    var grid = document.getElementById('library-grid-fallback');
+    var domeWrap = document.getElementById('library-dome-full-wrap');
+    if (toggleBtns.length && grid && domeWrap) {
+      toggleBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          toggleBtns.forEach(function (b) { b.classList.remove('is-active'); });
+          btn.classList.add('is-active');
+          var view = btn.getAttribute('data-view');
+          if (view === 'dome') {
+            grid.classList.add('is-hidden');
+            domeWrap.classList.remove('is-hidden');
+            if (fullDome) requestAnimationFrame(function () { fullDome.refresh(); });
+          } else {
+            domeWrap.classList.add('is-hidden');
+            grid.classList.remove('is-hidden');
+          }
+        });
+      });
+    }
+
+    // Category filter chips ("All / Tacloban / Briefing / GACPA / Relief") —
+    // clicking one rebuilds every dome (teaser + full) with only that
+    // category's photos, and hides the rest in the grid fallback too.
+    var filterRow = document.getElementById('library-filter-row');
+    if (filterRow) {
+      var chips = Array.prototype.slice.call(filterRow.querySelectorAll('.filter-chip'));
+      var gridFigures = grid ? Array.prototype.slice.call(grid.querySelectorAll('.gallery-card')) : [];
+
+      // tag each grid figure with its category, read straight from its own kicker
+      gridFigures.forEach(function (fig) {
+        var kicker = fig.querySelector('.card__kicker');
+        fig.dataset.category = kicker ? kicker.textContent.trim().toLowerCase() : '';
+      });
+
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          chips.forEach(function (c) { c.classList.remove('is-active'); });
+          chip.classList.add('is-active');
+
+          var filter = (chip.getAttribute('data-filter') || chip.textContent.trim()).toLowerCase();
+          var matched = filter === 'all'
+            ? images
+            : images.filter(function (d) { return (d.kicker || '').trim().toLowerCase() === filter; });
+
+          var teaserDome = instances['library-dome-teaser'];
+          if (teaserDome) teaserDome.setImages(matched);
+          if (fullDome) fullDome.setImages(matched);
+
+          gridFigures.forEach(function (fig) {
+            var show = filter === 'all' || fig.dataset.category === filter;
+            fig.classList.toggle('is-hidden', !show);
+          });
+        });
+      });
+    }
+  });
+})();
+</script>
+<script>var siteSearchIndex = [
+    { type: "Report", title: "Assessment of Disaster Risk Reduction Management at the Local Level", tags: "drrm local government assessment", action: function(){ document.getElementById('modal-report1').showModal(); } },
+    { type: "Report", title: "A Special Report on Typhoon Yolanda", tags: "typhoon yolanda haiyan special report", action: function(){ document.getElementById('modal-report2').showModal(); } },
+    { type: "Report", title: "Citizen Participatory Audit", tags: "citizen participatory audit cpa category", action: function(){ document.getElementById('modal-report3').showModal(); } },
+    { type: "Report", title: "Audit of Flood Control Infrastructure Projects", tags: "flood control infrastructure dpwh", action: function(){ document.getElementById('modal-report4').showModal(); } },
+    { type: "Report", title: "Tracking Relief Goods Distribution", tags: "relief goods distribution warehouse tracking", action: function(){ document.getElementById('modal-report5').showModal(); } },
+    { type: "Report", title: "Evaluation of Early Warning Systems", tags: "early warning sensors rain gauges sirens", action: function(){ document.getElementById('modal-report6').showModal(); } },
+
+    { type: "Article", title: "Evolution of Disaster Laws in the Philippines", tags: "history executive order 335 quezon", action: function(){ openArticle('modal-article1'); } },
+    { type: "Article", title: "Developing Governance Framework on DRRM", tags: "governance drrm conference coa 2013", action: function(){ openArticle('modal-article2'); } },
+    { type: "Article", title: "Why do we need an Accounting Guide?", tags: "policy ra 10121 accounting guide", action: function(){ openArticle('modal-article3'); } },
+    { type: "Article", title: "Field Perspectives on DRRM Governance", tags: "governance field auditors barangay", action: function(){ openArticle('modal-article4'); } },
+    { type: "Article", title: "Auditing Emergency Procurement Rules", tags: "procurement emergency negotiated purchase", action: function(){ openArticle('modal-article5'); } },
+    { type: "Article", title: "Tracing Donor Fund Reconciliation", tags: "finance donor fund reconciliation international aid", action: function(){ openArticle('modal-article6'); } },
+    { type: "Article", title: "Inside the Citizen Participatory Audit", tags: "cpa citizen participatory audit volunteers", action: function(){ openArticle('modal-article7'); } },
+    { type: "Article", title: "Lessons From Typhoon Yolanda Recovery", tags: "tacloban typhoon yolanda recovery resettlement", action: function(){ openArticle('modal-article8'); } },
+
+    { type: "Gallery", title: "DRRM Seminar — Commissioner Mendoza @ GACPA Convention", tags: "drrm seminar mendoza gacpa gallery", action: function(){ document.getElementById('modal-library-gallery').showModal(); } },
+    { type: "Gallery", title: "DSWD — Relief Operations for the victims of typhoon yolanda", tags: "dswd relief operations yolanda gallery", action: function(){ document.getElementById('modal-library-gallery').showModal(); } },
+    { type: "Gallery", title: "COA/DRR — Briefing for COA Auditors of about DRR", tags: "coa drr briefing auditors gallery", action: function(){ document.getElementById('modal-library-gallery').showModal(); } }
+  ];
+
+  function runSiteSearch() {
+    var input = document.getElementById('site-search-input');
+    var resultsBox = document.getElementById('site-search-results');
+    var query = (input.value || "").trim().toLowerCase();
+
+    resultsBox.innerHTML = "";
+
+    if (query.length === 0) {
+      resultsBox.style.display = "none";
+      return;
+    }
+
+    var matches = siteSearchIndex.filter(function (item) {
+      var haystack = (item.title + " " + item.tags + " " + item.type).toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    });
+
+    var table = document.createElement("table");
+    table.setAttribute("width", "100%");
+    table.setAttribute("cellpadding", "8");
+    table.setAttribute("cellspacing", "0");
+    table.setAttribute("border", "1");
+
+    if (matches.length === 0) {
+      var emptyRow = table.insertRow();
+      var emptyCell = emptyRow.insertCell();
+      emptyCell.innerHTML = "<font size='2' color='#777777'>No results found for \"" + query.replace(/</g, "&lt;") + "\".</font>";
+    } else {
+      matches.forEach(function (item, idx) {
+        var row = table.insertRow();
+        var cell = row.insertCell();
+        cell.style.cursor = "pointer";
+        cell.innerHTML =
+          "<font color='#6B1E23' size='1'><b>" + item.type + "</b></font><br>" +
+          "<font size='2' color='#333333'>" + item.title + "</font>";
+        cell.onclick = (function (matchedItem) {
+          return function () {
+            document.getElementById('site-search-results').style.display = "none";
+            document.getElementById('site-search-input').value = "";
+            matchedItem.action();
+          };
+        })(item);
+      });
+    }
+
+    resultsBox.appendChild(table);
+    resultsBox.style.display = "block";
+  }
+
+
+
+
+  function openArticle(id) {
+    var dlg = document.getElementById(id);
+    if (!dlg) return;
+    dlg.showModal();
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        dlg.style.transform = 'translateX(0)';
+      });
+    });
+  }
+
+  function closeArticlePanel(id) {
+    var dlg = document.getElementById(id);
+    if (!dlg) return;
+    dlg.style.transform = 'translateX(100%)';
+    setTimeout(function () {
+      dlg.close();
+    }, 350);
+  }
+
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var panels = document.querySelectorAll('.article-panel');
+    panels.forEach(function (dlg) {
+      dlg.addEventListener('click', function (event) {
+        if (event.target === dlg) {
+          closeArticlePanel(dlg.id);
+        }
+      });
+      dlg.addEventListener('close', function () {
+        dlg.style.transform = 'translateX(100%)';
+      });
+    });
+  });
+
+
+
+
+  (function () {
+    const select = document.getElementById('language-select');
+    if (!select) return;
+
+    const phrases = {
+      "Reports ▼": "Mga Ulat ▼",
+      "Gallery": "Galerya",
+      "Articles": "Mga Artikulo",
+      "Contacts": "Mga Kontak",
+      "Home": "Bahay",
+      "Contact Support": "Kontakin ang Suporta",
+      "Get started": "Magsimula na",
+      "REPUBLIC OF THE PHILIPPINES": "REPUBLIKA NG PILIPINAS",
+      "Ensuring every single peso allocated for calamity response, mitigation, and national relief reaches its true intended purpose through rigorous, citizen-transparent tracking.": "Tinitiyak na ang bawat piso na inilaan para sa pagtugon sa sakuna, pag-iwas, at pambansang tulong ay nakararating sa tunay nitong layunin sa pamamagitan ng masusing pagsubaybay na malinaw sa mamamayan.",
+      "Search tracking numbers, disaster allocations, or regional reports...": "Maghanap ng mga numero ng pagsubaybay, alokasyon sa sakuna, o mga ulat sa rehiyon...",
+      "LIVE ALLOCATION MONITOR (SIMULATION)": "LIVE NA MONITOR NG ALOKASYON (SIMULASYON)",
+      "Processed 4 mins ago": "Naiproseso 4 minuto ang nakalipas",
+      "Processed 1 hour ago": "Naiproseso 1 oras ang nakalipas",
+      "Processed 3 hours ago": "Naiproseso 3 oras ang nakalipas",
+      "Response Teams Tracked": "Mga Pangkat ng Tugon na Na-track",
+      "WELCOME TO DISASTER AUDIT": "MALIGAYANG PAGDATING SA DISASTER AUDIT",
+      "The project is an attempt to improve accountability over disaster funds.": "Ang proyekto ay isang pagtatangka upang mapabuti ang pananagutan sa pondo ng sakuna.",
+      "Read more →": "Magbasa pa →",
+      "Close": "Isara",
+      "Download Full Report": "I-download ang Buong Ulat",
+      "MORE REPORTS": "HIGIT PANG MGA ULAT",
+      "All available reports": "Lahat ng available na ulat",
+      "Pick a report to open it:": "Pumili ulat para buksan ito:",
+      "DOCUMENTATION LIBRARY": "AKLATAN NG DOKUMENTASYON",
+      "Visual documentation of Commission on Audit's disaster response audits, field operations, and rehabilitation assessments — ensuring transparency and fiscal accountability where it matters most.": "Biswal na dokumentasyon ng mga pag-audit sa pagtugon sa sakuna ng Commission on Audit, mga operasyon sa field, at mga pagtatasa sa rehabilitasyon — na tinitiyak ang transparency at pananagutan sa pananalapi kung saan ito pinakamahalaga.",
+      "ALL": "LAHAT",
+      "View More..": "Tingnan pa..",
+      "Full Photo Gallery": "Buong Koleksyon ng Larawan",
+      "Commission on Audit": "Komisyon sa Pag-audit",
+      "Product": "Produkto",
+      "Resources": "Mga Mapagkukunan",
+      "Community": "Komunidad",
+      "Company": "Kumpanya",
+      "Support": "Suporta",
+      "Features": "Mga Tampok",
+      "Pricing": "Presyo",
+      "Blog": "Blog",
+      "User guides": "Mga gabay ng user",
+      "Webinars": "Mga webinar",
+      "Developers": "Mga developer",
+      "Users": "Mga user",
+      "About": "Tungkol sa",
+      "Join us": "Sumali sa amin",
+      "Help center": "Sentro ng tulong",
+      "Chat support": "Suporta sa chat",
+      "Privacy": "Pribasiya",
+      "Terms": "Mga Tuntunin",
+      "Quezon City": "Lungsod ng Quezon"
+    };
+
+    const textNodes = [];
+    const originalTexts = new Map();
+
+    function collectTextNodes(node) {
+      if (node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.trim()) {
+        textNodes.push(node);
+        originalTexts.set(node, node.nodeValue);
+      } else {
+        for (let child = node.firstChild; child; child = child.nextSibling) {
+          collectTextNodes(child);
+        }
+      }
+    }
+
+    collectTextNodes(document.body);
+
+    function applyTranslation(language) {
+      textNodes.forEach(function (node) {
+        const original = originalTexts.get(node) || node.nodeValue;
+        if (language === 'Filipino') {
+          let translated = original;
+          Object.keys(phrases).forEach(function (key) {
+            translated = translated.split(key).join(phrases[key]);
+          });
+          node.nodeValue = translated;
+        } else {
+          node.nodeValue = original;
+        }
+      });
+    }
+
+    select.addEventListener('change', function () {
+      applyTranslation(this.value);
+    });
+  })();
+
+
+  // VIDEO CAROUSEL (map section) video carousel but in js form
+  var videoCarouselVideos = [
+    { src: "C:\\Users\\Vonn\\Downloads\\Disaster Audit\\Sources\\Intro.mp4", poster: "C:\\Users\\Vonn\\Downloads\\Disaster Audit\\EQs_1900-2013_worldseis.png" },
+    { src: "C:\\Users\\Vonn\\Downloads\\Disaster Audit\\Sources\\Relief operation.mp4", poster: "" },
+    { src: "C:\\Users\\Vonn\\Downloads\\Disaster Audit\\Sources\\Video3.mp4", poster: "" },
+    { src: "C:\\Users\\Vonn\\Downloads\\Disaster Audit\\Sources\\Video4.mp4", poster: "" },
+    { src: "C:\\Users\\Vonn\\Downloads\\Disaster Audit\\Sources\\Video5.mp4", poster: "" }
+  ];
+
+  var videoCarouselIndex = 0;
+
+  function videoCarouselRender() {
+    var video = document.getElementById('video-carousel-player');
+    var source = document.getElementById('video-carousel-source');
+    var dotsEl = document.getElementById('video-carousel-dots');
+    if (!video || !source) return;
+
+    var current = videoCarouselVideos[videoCarouselIndex];
+    source.src = current.src;
+
+    if (current.poster) {
+      video.setAttribute('poster', current.poster);
+    } else {
+      video.removeAttribute('poster');
+    }
+
+    video.load();
+    video.pause();
+
+    if (dotsEl) {
+      var dotsHtml = "";
+      for (var i = 0; i < videoCarouselVideos.length; i++) {
+        dotsHtml += (i === videoCarouselIndex ? "&#9679; " : "&#9675; ");
+      }
+      dotsEl.innerHTML = dotsHtml.trim();
+    }
+  }
+
+  function videoCarouselNext() {
+    videoCarouselIndex = (videoCarouselIndex + 1) % videoCarouselVideos.length;
+    videoCarouselRender();
+  }
+
+  function videoCarouselPrev() {
+    videoCarouselIndex = (videoCarouselIndex - 1 + videoCarouselVideos.length) % videoCarouselVideos.length;
+    videoCarouselRender();
+  }
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.getElementById('reports-toggle');
+  var dropdown = document.getElementById('reports-dropdown');
+  if (!toggle || !dropdown) return;
+
+
+  toggle.addEventListener('click', function (event) {
+    event.stopPropagation();
+    dropdown.style.display = (dropdown.style.display === 'block') ? 'none' : 'block';
+  });
+
+
+  var items = dropdown.querySelectorAll('.reports-dropdown-item');
+  items.forEach(function (item) {
+    item.addEventListener('click', function () {
+      dropdown.style.display = 'none';
+      var modal = document.getElementById(this.getAttribute('data-modal'));
+      if (modal) modal.showModal();
+    });
+  });
+
+
+  document.addEventListener('click', function (event) {
+    if (dropdown.style.display !== 'block') return;
+    var clickedInsideMenu = dropdown.contains(event.target);
+    var clickedToggle = toggle.contains(event.target);
+    if (!clickedInsideMenu && !clickedToggle) {
+      dropdown.style.display = 'none';
+    }
+  });
+});
+
+(function () {
+  var lightbox = document.createElement('dialog');
+  lightbox.id = 'image-lightbox';
+  lightbox.style.cssText =
+    'padding:0;border:none;margin:0;width:100%;height:100%;max-width:100vw;max-height:100vh;' +
+    'background:rgba(0,0,0,0.94);';
+
+  lightbox.innerHTML =
+    '<a href="javascript:void(0)" id="lightbox-close" ' +
+    'style="position:absolute;top:20px;right:30px;color:#ffffff;font-size:28px;font-weight:bold;' +
+    'text-decoration:none;z-index:2;">&#10005;</a>' +
+
+    '<a href="javascript:void(0)" id="lightbox-prev" ' +
+    'style="position:absolute;top:50%;left:20px;transform:translateY(-50%);color:#ffffff;' +
+    'font-size:40px;text-decoration:none;z-index:2;">&#8592;</a>' +
+
+    '<a href="javascript:void(0)" id="lightbox-next" ' +
+    'style="position:absolute;top:50%;right:20px;transform:translateY(-50%);color:#ffffff;' +
+    'font-size:40px;text-decoration:none;z-index:2;">&#8594;</a>' +
+
+    '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;box-sizing:border-box;padding:60px;">' +
+    '<img id="lightbox-img" src="" style="max-width:100%;max-height:100%;box-shadow:0 6px 24px rgba(0,0,0,0.6);">' +
+    '</div>' +
+
+    '<div id="lightbox-caption" style="position:absolute;bottom:20px;left:0;width:100%;text-align:center;' +
+    'color:#f0e9e6;font-size:14px;"></div>';
+
+  document.body.appendChild(lightbox);
+
+  var lightboxImg = document.getElementById('lightbox-img');
+  var lightboxCaption = document.getElementById('lightbox-caption');
+  var currentGalleryImages = [];
+  var currentIndex = 0;
+
+  function showImageAt(index) {
+    if (!currentGalleryImages.length) return;
+    currentIndex = (index + currentGalleryImages.length) % currentGalleryImages.length;
+    var img = currentGalleryImages[currentIndex];
+    lightboxImg.src = img.getAttribute('src');
+    lightboxCaption.textContent = img.getAttribute('alt') || '';
+  }
+
+  function openLightbox(clickedImg, imgGroup) {
+    currentGalleryImages = imgGroup;
+    currentIndex = imgGroup.indexOf(clickedImg);
+    showImageAt(currentIndex);
+    lightbox.showModal();
+  }
+
+  function closeLightbox() {
+    lightbox.close();
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox-prev').addEventListener('click', function () { showImageAt(currentIndex - 1); });
+  document.getElementById('lightbox-next').addEventListener('click', function () { showImageAt(currentIndex + 1); });
+
+  lightbox.addEventListener('click', function (event) {
+    if (event.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (!lightbox.open) return;
+    if (event.key === 'ArrowLeft') showImageAt(currentIndex - 1);
+    if (event.key === 'ArrowRight') showImageAt(currentIndex + 1);
+  });
+
+  function attachLightboxToContainer(containerSelector) {
+    var container = document.querySelector(containerSelector);
+    if (!container) return;
+    var imgs = Array.prototype.slice.call(container.querySelectorAll('img'));
+    imgs.forEach(function (img) {
+      img.style.cursor = 'zoom-in';
+      img.addEventListener('click', function (event) {
+        event.stopPropagation();
+        openLightbox(img, imgs);
+      });
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    attachLightboxToContainer('#modal-library-gallery');
+    attachLightboxToContainer('#modal-articles-gallery');
+  });
+})();
+
+document.querySelectorAll('.card-grid--gallery .gallery-card img').forEach(function(img){
+  img.addEventListener('error', function(){
+    img.style.display = 'none';
+  });
+});
+
+</script>
+
+</body>
+</html>
