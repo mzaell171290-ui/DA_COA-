@@ -224,6 +224,75 @@
   .modal-panel__actions{display:flex; gap:.7em; padding-top:1.2em; margin-top:.4em; border-top:1px solid var(--line);}
   .modal-panel__actions .btn{flex:1;}
 
+  /* =========================================================
+     LIBRARY "FULL GALLERY" FLOATER — native <dialog>, restyled
+     to match the rest of the site. Mobile: a full-screen sheet
+     with its own scroll region and a floating close button.
+     Larger screens: a centered rounded card with a real backdrop.
+     ========================================================= */
+  dialog.modal{
+    border:none; padding:0; margin:auto;
+    width:100%; max-width:100%;
+    height:100%; max-height:100%;
+    background:transparent;
+    color:inherit;
+  }
+  dialog.modal::backdrop{
+    background:rgba(23,7,9,.6);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+  }
+  dialog.modal[open]{ animation:modal-fade-in .25s ease; }
+  @keyframes modal-fade-in{ from{opacity:0;} to{opacity:1;} }
+
+  .modal__panel{
+    position:relative;
+    width:100%; height:100%;
+    max-height:100vh;
+    background:var(--paper);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:4.4em var(--gutter) 2.6em;
+    animation:modal-panel-in .32s cubic-bezier(.22,.9,.32,1);
+  }
+  @keyframes modal-panel-in{
+    from{ opacity:0; transform:translateY(18px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .modal__panel .card__kicker{ margin-bottom:.3em; }
+  .modal__panel h3{ font-size:1.35rem; margin-bottom:.7em; }
+
+  .modal__close{
+    position:fixed; top:1em; right:1em; z-index:5;
+    width:40px; height:40px; border-radius:50%;
+    border:1px solid var(--line); background:#fff;
+    color:var(--maroon-700); font-size:.85rem; cursor:pointer;
+    box-shadow:var(--shadow-card);
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s ease, color .2s ease, transform .2s ease;
+  }
+  .modal__close:hover{ background:var(--maroon-700); color:#fff; }
+  .modal__close:active{ transform:scale(.94); }
+
+  @media (min-width:640px){
+    dialog.modal{
+      width:min(92vw, 780px);
+      height:auto; max-height:88vh;
+      border-radius:var(--radius-l);
+      overflow:hidden;
+      box-shadow:var(--shadow-lift);
+    }
+    .modal__panel{
+      height:auto; max-height:88vh;
+      border-radius:var(--radius-l);
+      padding:2.4em 2.6em 2.6em;
+    }
+    .modal__close{ position:absolute; top:1.3em; right:1.3em; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    dialog.modal[open], .modal__panel{ animation:none !important; }
+  }
+
   .card-grid{display:flex; flex-direction:column; gap:1em;}
   .card{
     background:#fff; border:1px solid var(--line); border-radius:var(--radius-m);
@@ -1024,8 +1093,10 @@ body.dg-scroll-lock { overflow: hidden; }
         <li><div class="row"><span class="loc">Region VIII · Typhoon relief</span><span class="amount">₱4.2M</span></div><time>2 min ago</time></li>
         <li><div class="row"><span class="loc">Region V · Evacuation centers</span><span class="amount">₱1.8M</span></div><time>11 min ago</time></li>
         <li><div class="row"><span class="loc">BARMM · Flood response</span><span class="amount">₱6.6M</span></div><time>24 min ago</time></li>
+        <li><div class="row"><span class="loc">BARMM · Flood response</span><span class="amount">₱6.6M</span></div><time>24 min ago</time></li>
       </ul>
     </div>
+
   </div>
 </section>
 
